@@ -29,7 +29,7 @@ class TestAll /*implements Buddy <[
     runner.run();
   }
   
-  // manually create empty dirs as they're not git versionable without adding a dummy file inside
+  // manually create empty dirs, as they're not git versionable without adding a dummy file inside
   static function createEmptyDirsIn(parentDirs:Array<String>):Void {
     for (parent in parentDirs) {
       var emptyDir = Path.join([parent, EMPTY_DIR]);
@@ -150,7 +150,7 @@ class TestMisc extends BuddySuite {
       });
     });
     
-    describe('Populate file', {
+    describe('Populate file (length == 1)', {
       var root = new FSTree(ASSETS_FILE);
       
       it('Shallow', {
