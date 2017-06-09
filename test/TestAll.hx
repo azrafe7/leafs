@@ -68,6 +68,7 @@ class TestMisc extends BuddySuite {
         Assert.isTrue(root.name == root.fullName);
         Assert.isTrue(root.parent == "");
         Assert.isTrue(root.fullName.split(SEP).pop() != ""); // doesn't end with '/'
+        Assert.isTrue(root.parent == ""); // parent is empty (as it's a relative path)
       });
       
       it('Contains subdir', function(done) {
@@ -123,7 +124,7 @@ class TestMisc extends BuddySuite {
       });
     });
     
-    describe('Traversal and to*Array()', {
+    describe('Traversal, to*Array() and iterator', {
       var root = new FSTree(ASSETS_DIR);
       root.populate(true);
       
@@ -140,6 +141,12 @@ class TestMisc extends BuddySuite {
         
         Assert.isTrue(count == entries.length);
         Assert.isTrue(count == paths.length);
+        
+        for (e in root) {
+          count--;
+        }
+        
+        Assert.isTrue(count == 0);
       });
     });
     
@@ -160,6 +167,34 @@ class TestMisc extends BuddySuite {
         Assert.isTrue(root.children.length == 0);
         Assert.isTrue(root.toFlatArray().length == 1);
         Assert.isTrue(root.toStringArray().length == 1);
+      });
+    });
+    
+    // no entry ends with '/'
+    describe('No trailing backslashes', {
+      var root = new FSTree(ASSETS_FILE);
+      root.populate(true);
+      
+      it('traverse()', {
+        FSTree.traverse(function (e:FSTree) {
+          var lastPart = e.fullName.split(SEP).pop();
+          Assert.isTrue(lastPart != "");
+        }, root);
+      });
+      
+      it('to*Array()', {
+        var paths = root.toStringArray();
+        var entries = root.toFlatArray();
+        
+        for (i in 0...paths.length) {
+          var path = paths[i];
+          var entry = entries[i];
+          Assert.isTrue(path == entry.fullName);
+          Assert.isTrue(path.lastIndexOf(SEP) < path.length - 1);
+          Assert.isTrue(entry.fullName.lastIndexOf(SEP) < entry.fullName.length - 1);
+          Assert.isTrue(entry.name.lastIndexOf(SEP) < entry.name.length - 1);
+          Assert.isTrue(entry.parent.lastIndexOf(SEP) < entry.parent.length - 1);
+        }
       });
     });
   }
