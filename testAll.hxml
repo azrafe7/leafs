@@ -1,0 +1,8 @@
+-cp src
+-cp test
+-main TestAll
+#-debug
+-lib utest
+-lib buddy
+#-cs bin/cs
+#-lib hxnodejs -js bin/testAll.js
