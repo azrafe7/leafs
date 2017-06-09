@@ -1,0 +1,4 @@
+-cp src
+-main Example
+#-debug
+#-neko bin\example.n
