@@ -27,11 +27,14 @@ class FSTree extends FSEntry {
     }
   }
 
-  public function populate(recurse:Bool = false):FSTree {
-  
+  inline public function populate(recurse:Bool = false):FSTree {
     if (this.isDir) _populate(this, recurse);
     
     return this;
+  }
+  
+  inline public function getEntry(fullName:String):FSTree {
+    return findEntry(fullName, this);
   }
   
   inline public function toJson(?replacer:Dynamic->Dynamic->Dynamic, space:String = "  "):String {
@@ -40,7 +43,7 @@ class FSTree extends FSEntry {
   
   public function toFlatArray():Array<FSTree> {
     var entries = [];
-    traverse(entries.push, this);
+    traverse(this, entries.push);
     return entries;
   }
   
@@ -49,7 +52,7 @@ class FSTree extends FSEntry {
     function pushFullName(e) {
       entries.push(e.fullName);
     }
-    traverse(pushFullName, this);
+    traverse(this, pushFullName);
     return entries;
   }
   
@@ -57,13 +60,23 @@ class FSTree extends FSEntry {
     return toFlatArray().iterator();
   }
   
-  static public function traverse(fn:FSTree->Void, parentEntry:FSTree):Void {
+  static public function traverse(parentEntry:FSTree, fn:FSTree->Void):Void {
     fn(parentEntry);
     
     for (e in parentEntry.children) {
-      if (e.isDir) traverse(fn, e);
+      if (e.isDir) traverse(e, fn);
       else fn(e);
     }
+  }
+  
+  static public function findEntry(fullName:String, parentEntry:FSTree):FSTree {
+    var foundEntry:FSTree = null;
+    traverse(parentEntry, function(e:FSTree):Void {
+      if (e.fullName == fullName) {
+        foundEntry = e;
+      };
+    });
+    return foundEntry;
   }
   
   function _populate(parentEntry:FSTree, recurse:Bool):Void {

@@ -72,23 +72,23 @@ class TestMisc extends BuddySuite {
       });
       
       it('Contains subdir', function(done) {
-        FSTree.traverse(function (e:FSTree) {
+        FSTree.traverse(root, function (e:FSTree) {
           if (e.fullName == ASSETS_SUBDIR && e.isDir) done();
-        }, root);
+        });
         fail();
       });
 
       it('Contains empty dir', function(done) {
-        FSTree.traverse(function (e:FSTree) {
+        FSTree.traverse(root, function (e:FSTree) {
           if (e.fullName.indexOf(EMPTY_DIR) >= 0 && e.isDir) done();
-        }, root);
+        });
         fail();
       });
 
       it('Doesn\'t contain deep file', function(done) {
-        FSTree.traverse(function (e:FSTree) {
+        FSTree.traverse(root, function (e:FSTree) {
           if (e.fullName.indexOf(DEEP_FILE) >= 0 && e.isFile) fail("Contains deep file");
-        }, root);
+        });
         done();
       });
     });
@@ -109,17 +109,17 @@ class TestMisc extends BuddySuite {
       it('Contains two empty dirs', {
         var count = 0;
         
-        FSTree.traverse(function (e:FSTree) {
+        FSTree.traverse(root, function (e:FSTree) {
           if (e.fullName.indexOf(EMPTY_DIR) >= 0 && e.isDir) count++;
-        }, root);
+        });
         
         Assert.isTrue(count == 2);
       });
 
       it('Contains deep file', function(done) {
-        FSTree.traverse(function (e:FSTree) {
+        FSTree.traverse(root, function (e:FSTree) {
           if (e.fullName.indexOf(DEEP_FILE) >= 0 && e.isFile) done();
-        }, root);
+        });
         fail();
       });
     });
@@ -133,11 +133,11 @@ class TestMisc extends BuddySuite {
         var paths = root.toStringArray();
         var entries = root.toFlatArray();
         
-        FSTree.traverse(function (e:FSTree) {
+        FSTree.traverse(root, function (e:FSTree) {
           Assert.isTrue(e == entries[count]);
           Assert.isTrue(e.fullName == paths[count]);
           count++;
-        }, root);
+        });
         
         Assert.isTrue(count == entries.length);
         Assert.isTrue(count == paths.length);
@@ -176,10 +176,10 @@ class TestMisc extends BuddySuite {
       root.populate(true);
       
       it('traverse()', {
-        FSTree.traverse(function (e:FSTree) {
+        FSTree.traverse(root, function (e:FSTree) {
           var lastPart = e.fullName.split(SEP).pop();
           Assert.isTrue(lastPart != "");
-        }, root);
+        });
       });
       
       it('to*Array()', {
@@ -195,6 +195,23 @@ class TestMisc extends BuddySuite {
           Assert.isTrue(entry.name.lastIndexOf(SEP) < entry.name.length - 1);
           Assert.isTrue(entry.parent.lastIndexOf(SEP) < entry.parent.length - 1);
         }
+      });
+    });
+    
+    describe('Delayed populate()', {
+      var root = new FSTree(ASSETS_FILE);
+      root.populate(false);
+      
+      it('Populate subdir only', {
+        var subdir = root.children[0];
+        trace(subdir);
+        Assert.isTrue(subdir != null);
+        subdir.populate(false);
+        
+        FSTree.traverse(root, function (e:FSTree) {
+          if (e.fullName.indexOf(ASSETS_SUBSUBDIR) >= 0) true;
+        });
+        fail();
       });
     });
   }
