@@ -62,7 +62,7 @@ Paths are relative!
  - custom handling of IO errors (`FSErrorPolicy`)
  - iterate through the tree (`iterator()`)
 
-See [testAll.hx](test/testAll.hx) for more info/examples. 
+See [TestAll.hx](test/TestAll.hx) for more info/examples. 
 
 ## License
 MIT (see [LICENSE](LICENSE) file).
