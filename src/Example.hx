@@ -4,6 +4,8 @@ import leafs.FSTree;
 import haxe.Json;
 import haxe.format.JsonPrinter;
 import haxe.io.Path;
+import sys.FileSystem;
+import sys.io.File;
 
 
 class Example {
@@ -14,7 +16,7 @@ class Example {
       return true;
     }
     else {
-      trace("Error encountered and skipped " + path);
+      trace("Error encountered. Skipping " + path);
       return false;
     }
   }
@@ -22,26 +24,43 @@ class Example {
   
   static public function main() {
     
+    // set custom policy for error handling
     FSTree.errorPolicy = FSErrorPolicy.Custom(customErrorHandler);
     
-    var entry = new FSTree("assets/");
+    var root = new FSTree("assets/"); // finals backslash not needed, handled by Path.normalize internally
     
-    trace(entry);
-    trace("path: " + new Path(entry.fullName));
+    trace("Root entry:");
+    Sys.println(root);
+    Sys.print("\n");
     
-    entry.populate(true);
+    trace("FullName: " + new Path(root.fullName));
+    Sys.print("\n");
     
-    entry.children[0].populate(true);
+    root.populate(true);
     
-    var prettyJson = entry.toJson();
-    trace(prettyJson);
+    var prettyJson = root.toJson();
+    trace("toJson:");
+    Sys.println(prettyJson);
+    Sys.print("\n");
     
-    trace(entry.toFlatArray().join('\n'));
-    trace(entry.toStringArray().join('\n'));
+    trace("toFlatArray:");
+    Sys.println(root.toFlatArray().join('\n'));
+    Sys.print("\n");
     
-    for (e in entry) {
-      trace(e.name);
+    trace("toStringArray:");
+    Sys.println(root.toStringArray().join('\n'));
+    Sys.print("\n");
+    
+    trace("Using iterator:");
+    for (e in root) {
+      Sys.println(e.name);
     }
+    Sys.print("\n");
+    
+    var deepFile = FSTree.findEntries(~/.*deep.file.*/i, root)[0];
+    trace('Contents of "${deepFile.fullName}":');
+    Sys.println(File.getContent(deepFile.fullName));
+    Sys.print("\n");
   }
   
 }
