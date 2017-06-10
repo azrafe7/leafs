@@ -1,6 +1,6 @@
 # leafs
 
-:herb: A tiny FileTree implementation wrapping haxe file system API.
+:herb: A tiny FileTree implementation wrapping the haxe file system API.
 
 ## Usage
 
