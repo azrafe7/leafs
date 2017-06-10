@@ -199,20 +199,25 @@ class TestMisc extends BuddySuite {
     });
     
     describe('Delayed populate()', {
-      var root = new FSTree(ASSETS_FILE);
-      root.populate(false);
-      
-      it('Populate subdir only', {
-        var subdir = root.children[0];
-        trace(subdir);
-        Assert.isTrue(subdir != null);
+      it('Populate subdir only', function(done) {
+        var root = new FSTree(ASSETS_DIR);
+        root.populate(false);
+        
+        var subdir = root.getEntry(ASSETS_SUBDIR);
+        Assert.notNull(subdir);
         subdir.populate(false);
         
         FSTree.traverse(root, function (e:FSTree) {
-          if (e.fullName.indexOf(ASSETS_SUBSUBDIR) >= 0) true;
+          if (e.fullName.indexOf(ASSETS_SUBSUBDIR) >= 0) done();
         });
-        fail();
+        fail(ASSETS_SUBSUBDIR + " not found");
       });
     });
+  }
+  
+  static function debugger() {
+  #if nodejs
+    untyped __js__('debugger');
+  #end
   }
 }

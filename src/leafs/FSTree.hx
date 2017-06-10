@@ -69,18 +69,30 @@ class FSTree extends FSEntry {
     }
   }
   
+  static public function traverseUntil(parentEntry:FSTree, mustStop:FSTree->Bool):Void {
+    var halt = mustStop(parentEntry);
+    
+    for (e in parentEntry.children) {
+      if (halt) return;
+      if (e.isDir) traverseUntil(e, mustStop);
+      else halt = mustStop(e);
+    }
+  }
+  
   static public function findEntry(fullName:String, parentEntry:FSTree):FSTree {
     var foundEntry:FSTree = null;
-    traverse(parentEntry, function(e:FSTree):Void {
+    traverseUntil(parentEntry, function(e:FSTree):Bool {
+      //trace(e.fullName);
       if (e.fullName == fullName) {
         foundEntry = e;
+        return true;
       };
+      return false;
     });
     return foundEntry;
   }
   
   function _populate(parentEntry:FSTree, recurse:Bool):Void {
-    
     var entries = FileSystem.readDirectory(parentEntry.fullName);
     parentEntry.children = entries.map(function (e) { 
       return new FSTree(Path.join([parentEntry.fullName, e]));
