@@ -9,25 +9,13 @@ import sys.io.File;
 
 
 class Example {
-
-  static public function customErrorHandler(path:String, error:Dynamic):Bool {
-    if (path.indexOf("hiberfil.sys") >= 0) {
-      trace("halt");
-      return true;
-    }
-    else {
-      trace("Error encountered. Skipping " + path);
-      return false;
-    }
-  }
-  
   
   static public function main() {
     
     // set custom policy for error handling
     FSTree.errorPolicy = FSErrorPolicy.Custom(customErrorHandler);
     
-    var root = new FSTree("assets/"); // finals backslash not needed, handled by Path.normalize internally
+    var root = new FSTree("assets"); 
     
     trace("Root entry:");
     Sys.println(root);
@@ -36,7 +24,7 @@ class Example {
     trace("FullName: " + new Path(root.fullName));
     Sys.print("\n");
     
-    root.populate(true);
+    root.populate(true); // passing false will do a shallow scan
     
     var prettyJson = root.toJson();
     trace("toJson:");
@@ -53,7 +41,8 @@ class Example {
     
     trace("Using iterator:");
     for (e in root) {
-      Sys.println(e.name);
+      if (e.isDir) Sys.println("[" + e.name + "]");
+      else Sys.println(e.name);
     }
     Sys.print("\n");
     
@@ -63,4 +52,14 @@ class Example {
     Sys.print("\n");
   }
   
+  static public function customErrorHandler(path:String, error:Dynamic):Bool {
+    if (path.indexOf("hiberfil.sys") >= 0) {
+      trace("halt");
+      return true;
+    }
+    else {
+      trace("Error encountered. Skipping " + path);
+      return false;
+    }
+  }
 }
