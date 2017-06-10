@@ -92,6 +92,16 @@ class FSTree extends FSEntry {
     return foundEntry;
   }
   
+  static public function findEntries(fullNamePattern:EReg, parentEntry:FSTree):Array<FSTree> {
+    var entries:Array<FSTree> = [];
+    traverse(parentEntry, function(e:FSTree):Void {
+      if (fullNamePattern.match(e.fullName)) {
+        entries.push(e);
+      };
+    });
+    return entries;
+  }
+  
   function _populate(parentEntry:FSTree, recurse:Bool):Void {
     var entries = FileSystem.readDirectory(parentEntry.fullName);
     parentEntry.children = entries.map(function (e) { 

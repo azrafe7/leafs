@@ -197,11 +197,82 @@ class TestMisc extends BuddySuite {
         }
       });
     });
+
+    describe('Search single entries', {
+      it('File', {
+        var root = new FSTree(ASSETS_DIR);
+        root.populate(false);
+        
+        var file = root.getEntry(ASSETS_FILE);
+        Assert.notNull(file);
+        Assert.isTrue(file.isFile);
+        
+        var deep = root.getEntry(ASSETS_SUBSUBDIR + SEP + DEEP_FILE);
+        Assert.isNull(deep);
+        
+        root.populate(true);
+        deep = root.getEntry(ASSETS_SUBSUBDIR + SEP + DEEP_FILE);
+        Assert.notNull(deep);
+        Assert.isTrue(deep.isFile);
+      });
+      
+      it('Dir', {
+        var root = new FSTree(ASSETS_DIR);
+        root.populate(false);
+        
+        var subdir = root.getEntry(ASSETS_SUBDIR);
+        Assert.notNull(subdir);
+        Assert.isTrue(subdir.isDir);
+        
+        var subsubdir = root.getEntry(ASSETS_SUBSUBDIR);
+        Assert.isNull(subsubdir);
+        
+        root.populate(true);
+        subsubdir = root.getEntry(ASSETS_SUBSUBDIR);
+        Assert.notNull(subsubdir);
+        Assert.isTrue(subsubdir.isDir);
+      });
+    });
+    
+    describe('Search multiple entries with regex', {
+      it('Two empty dirs', {
+        var root = new FSTree(ASSETS_DIR);
+        root.populate(true);
+        
+        var ereg = ~/.*empty-dir.*/;
+        var emptyDirs = FSTree.findEntries(ereg, root);
+        Assert.isTrue(emptyDirs.length == 2);
+      });
+      
+      it('Ignore case', {
+        var root = new FSTree(ASSETS_DIR);
+        root.populate(true);
+        
+        var ereg = ~/.*caps\.txt.*/i;
+        var emptyDirs = FSTree.findEntries(ereg, root);
+        Assert.isTrue(emptyDirs.length == 1);
+      });
+      
+      it('Respect case', {
+        var root = new FSTree(ASSETS_DIR);
+        root.populate(true);
+        
+        var ereg = ~/.*caps\.txt.*/;
+        var emptyDirs = FSTree.findEntries(ereg, root);
+        Assert.isTrue(emptyDirs.length == 0);
+        
+        var ereg = ~/.*CAPS\.txt.*/;
+        var emptyDirs = FSTree.findEntries(ereg, root);
+        Assert.isTrue(emptyDirs.length == 1);
+      });
+    });
     
     describe('Delayed populate()', {
       it('Populate subdir only', function(done) {
         var root = new FSTree(ASSETS_DIR);
         root.populate(false);
+        
+        Assert.isNull(root.getEntry(OTHER_SUB_DIR));
         
         var subdir = root.getEntry(ASSETS_SUBDIR);
         Assert.notNull(subdir);
