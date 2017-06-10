@@ -44,6 +44,7 @@
 
 ## Notes about API and implementation
 Paths are relative!
+Read first (with `populate()`), handle them later!
 
 `leafs.FSTree` extends `leafs.FSEntry` and exposes simple properties like:
  - `isFile`: true if references a file
@@ -63,6 +64,9 @@ Paths are relative!
  - iterate through the tree (`iterator()`)
 
 See [TestAll.hx](test/TestAll.hx) for more info/examples. 
+
+## Tests
+Tests so far are currently all passing on neko/nodejs/cpp/cs/java/python.
 
 ## License
 MIT (see [LICENSE](LICENSE) file).
