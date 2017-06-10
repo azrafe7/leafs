@@ -267,6 +267,31 @@ class TestMisc extends BuddySuite {
       });
     });
     
+    describe('No duplicates', {
+      it('fullName is unique', {
+        var root = new FSTree(ASSETS_DIR);
+        root.populate(true);
+        
+        function compareEntries(a:FSEntry, b:FSEntry):Int {
+          if (a.name == b.name) {
+            //trace('  seems similar (${a.name} == ${b.name})');
+            //trace('  but it is not (${a.fullName} != ${b.fullName})');
+          }
+          return a.fullName == b.fullName ? 0 : 1;
+        }
+        
+        var entries:Array<FSTree> = root.toFlatArray();
+        
+        var sortedEntries = entries;
+        sortedEntries.sort(compareEntries);
+        for (i in 0...entries.length - 1) {
+          var a = sortedEntries[i];
+          var b = sortedEntries[i + 1];
+          Assert.isTrue(a.fullName != b.fullName);
+        }
+      });
+    });
+    
     describe('Delayed populate()', {
       it('Populate subdir only', function(done) {
         var root = new FSTree(ASSETS_DIR);
