@@ -40,7 +40,13 @@ class AutoComplete {
     return fields;
   }
   
-  /** Transform `id` into a valid haxe identifier by replacing forbidden characters. */ 
+  /** 
+   * Transform `id` into a valid haxe identifier by replacing forbidden characters. 
+   * 
+   * NOTE; this mainly addresses transforming filenames/paths into valid haxe identifiers
+   *       (like haxeFlixel does), but doesn't guarantee to have a valid id back 
+   *       (f.e. doesn't take into account reserved words).
+   */ 
   public static function toValidId(id:String):String {
     var startingDigitRegex:EReg = ~/^[0-9]/g;
     var dirSepRegex:EReg = ~/[\/\\]/g;
