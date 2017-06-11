@@ -66,7 +66,7 @@ Read first (with `populate()`), handle them later!
 See [TestAll.hx](test/TestAll.hx) for more info/examples. 
 
 ## Tests
-Tests so far are currently all passing on neko/nodejs/cpp/cs/java/python.
+All tests _should_ be passing for the `sys` targets (neko/nodejs/cpp/cs/java/python). Run `haxe testAll.hxml -<target> <output>` and please report back if something odd happens.
 
 ## License
 MIT (see [LICENSE](LICENSE) file).
