@@ -40,7 +40,7 @@ class TestAll /*implements Buddy <[
     }
   }
   
-  static function debugger() {
+  static public function debugger() {
   #if nodejs
     untyped __js__('debugger');
   #end
@@ -368,14 +368,19 @@ class TestValidIds extends BuddySuite {
         done();
       });
       
-      it('From mocked strings (has dups)', {
+      it('From mocked strings (with dups)', {
+        TestAll.debugger();
         var dup = ".4.3";
         var assets = [].concat(mockedAssets);
         assets.push(dup);
         var xformed = assets.map(AutoComplete.toValidId);
-        trace(xformed.join('\n'));
         
         Assert.isTrue(AutoComplete.hasDuplicates(xformed));
+        
+        var dups = [];
+        AutoComplete.hasDuplicates(xformed, dups);
+        Assert.isTrue(dups.length == 1);
+        Assert.isTrue(dups[0] == "_4_3");
       });
     });
   }

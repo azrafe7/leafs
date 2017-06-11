@@ -62,10 +62,10 @@ class AutoComplete {
       return a < b ? -1 : (a > b ? 1 : 0); 
     });
     
-    for (i in 0...array.length - 1) {
-      if (array[i] == array[i + 1]) {
+    for (i in 0...sortedCopy.length - 1) {
+      if (sortedCopy[i] == sortedCopy[i + 1]) {
         hasDups = true;
-        if (duplicates != null) duplicates.push(array[i]);
+        if (duplicates != null) duplicates.push(sortedCopy[i]);
       }
     }
     return hasDups;
