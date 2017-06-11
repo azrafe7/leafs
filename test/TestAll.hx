@@ -4,6 +4,7 @@ import buddy.BuddySuite;
 import buddy.Buddy;
 import buddy.SuitesRunner;
 import haxe.io.Path;
+import leafs.AutoComplete;
 import sys.FileSystem;
 import utest.Assert;
 import leafs.FSTree;
@@ -13,6 +14,7 @@ import Constants.*;
 @reporter("MochaReporter")
 class TestAll /*implements Buddy <[
     TestMisc, 
+    TestValidIds,
   ]>*/ { 
 
   
@@ -24,6 +26,7 @@ class TestAll /*implements Buddy <[
     
     var runner = new SuitesRunner([
       new TestMisc(), 
+      new TestValidIds(),
     ], reporter);
     
     runner.run();
@@ -36,7 +39,14 @@ class TestAll /*implements Buddy <[
       if (!FileSystem.exists(emptyDir)) FileSystem.createDirectory(emptyDir);
     }
   }
+  
+  static function debugger() {
+  #if nodejs
+    untyped __js__('debugger');
+  #end
+  }
 }  
+
 
 class TestMisc extends BuddySuite {
   
@@ -310,10 +320,63 @@ class TestMisc extends BuddySuite {
       });
     });
   }
+}
+
+
+class TestValidIds extends BuddySuite {
+
+  static public var mockedAssets = [
+      ".assets",
+      "assets/4.g",
+      "a\\fi.t",
+      "\\.4",
+      "5.txt",
+      "name(3)",
+      "[azz]",
+      "[",
+      "4+3",
+      "assets\\dir\\5/*5",
+      "invalid-minus"
+  ];
   
-  static function debugger() {
-  #if nodejs
-    untyped __js__('debugger');
-  #end
+  
+  public function new() {
+    
+    describe('Check transform to valid ids', {
+      it('From assets', function (done) {
+        var root = new FSTree(ASSETS_DIR).populate(true);
+        var entries = root.toStringArray();
+        
+        var xformed = entries.map(AutoComplete.toValidId);
+        
+        Assert.isFalse(AutoComplete.hasDuplicates(xformed));
+        
+        for (e in xformed) {
+          if (AutoComplete.INVALID_CHARS_REGEX.match(e)) fail("duplicate identifier found!");
+        }
+        done();
+      });
+      
+      it('From mocked strings', function (done) {
+        var xformed = mockedAssets.map(AutoComplete.toValidId);
+        
+        Assert.isFalse(AutoComplete.hasDuplicates(xformed));
+        
+        for (e in xformed) {
+          if (AutoComplete.INVALID_CHARS_REGEX.match(e)) fail("duplicate identifier found!");
+        }
+        done();
+      });
+      
+      it('From mocked strings (has dups)', {
+        var dup = ".4.3";
+        var assets = [].concat(mockedAssets);
+        assets.push(dup);
+        var xformed = assets.map(AutoComplete.toValidId);
+        trace(xformed.join('\n'));
+        
+        Assert.isTrue(AutoComplete.hasDuplicates(xformed));
+      });
+    });
   }
 }
