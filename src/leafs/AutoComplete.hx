@@ -11,33 +11,50 @@ class AutoComplete {
   
   public static var INVALID_CHARS_REGEX:EReg = ~/[^a-zA-Z_0-9]/g;
   
-  macro public static function build(root:String, recurse:Bool, varName:String):Array<Field> {
-    var root = new FSTree(root).populate(recurse);
-
-    var entries = root.toStringArray();
+  macro public static function build(entries:Array<String>, varName:String):Array<Field> {
 
     var validIds = entries.map(toValidId);
     var duplicates = [];
     if (hasDuplicates(validIds, duplicates)) {
-      Context.error("Found colliding id names (" + duplicates + ")");
+      Context.error("Found colliding id names (" + duplicates + ")", Context.currentPos());
     }
 
     var fields = Context.getBuildFields();
-    var gtype = TAnonymous([for (i in 0...entries.length) { 
+    var objType:ComplexType = TAnonymous([for (i in 0...entries.length) { 
       name: validIds[i], 
       pos: Context.currentPos(), 
-      kind: FVar(macro:String, entries[i]) 
+      kind: FVar(macro :String) 
     }]);
     
-    var gids:Field = {
+    var objExpr:Expr = {
+      expr: EObjectDecl([
+        for (i in 0...entries.length) {
+          field: entries[i],
+          expr: macro $v{validIds[i]}
+        }
+      ]),
+      pos: Context.currentPos()
+    }
+    
+    var field:Field = {
       name: varName,
       pos: Context.currentPos(),
-      kind: FVar(gtype),
-      access: [AStatic],
+      kind: FVar(objType),
+      access: [AStatic, APublic],
     };
-    fields.push(gids);
+    fields.push(field);
     
+    Context.warning("AutoComplete.build: " + validIds.length + " entries processed.", Context.currentPos());
     return fields;
+  }
+  
+  macro static public function fromFS(root:String, recurse:Bool, varName:String, ?filter:FSTree->Bool):Array<Field> {
+    var fsRoot = new FSTree(root).populate(recurse);
+    var entries = fsRoot.toFlatArray();
+    if (filter != null) entries = entries.filter(filter);
+    var paths = entries.map(function (e) { return e.fullName; });
+    
+    return build(paths, varName);
   }
   
   /** 
