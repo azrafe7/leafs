@@ -1,18 +1,18 @@
 package leafs;
 
-import haxe.macro.ExprTools;
-import haxe.macro.Printer;
 import leafs.FSTree.FSEntry;
 
 #if macro
+import haxe.macro.ExprTools;
+import haxe.macro.Printer;
 import haxe.macro.Context;
 import haxe.macro.Expr;
 #end
 
 @:enum abstract FSFilter(String) from String to String {
-  var All = "ALL";
-  var DirOnly = "DIRS_ONLY";
-  var FileOnly = "FILES_ONLY";
+  var Any = "ANY";
+  var DirsOnly = "DIRS_ONLY";
+  var FilesOnly = "FILES_ONLY";
 }
 
 class AutoComplete {
@@ -20,6 +20,7 @@ class AutoComplete {
   static public var LOG:Bool = true;
   
   static public var INVALID_CHARS_REGEX:EReg = ~/[^a-zA-Z_0-9]/g;
+  
   
   #if !macro macro #end
   static public function build(ids:Array<String>, ?values:Array<String>, ?varName:String):Array<Field> {
@@ -97,7 +98,7 @@ class AutoComplete {
   static public function fromFS(root:String, recurse:Bool, ?varName:String, ?fsFilter:FSFilter, ?regexFilter:String, ?regexOptions:String):Array<Field> {
     var entries = new FSTree(root).populate(recurse).toFlatArray();
     
-    if (fsFilter == null) fsFilter = FSFilter.All;
+    if (fsFilter == null) fsFilter = FSFilter.Any;
     if (regexOptions == null) regexOptions = "";
     if (regexFilter == null) regexFilter = ".*";
     
@@ -107,11 +108,11 @@ class AutoComplete {
       var satisfiesRegex = regex.match(entry.fullName);
       if (!satisfiesRegex) return false;
       return switch (fsFilter) {
-        case FSFilter.All:
+        case FSFilter.Any:
           return satisfiesRegex;
-        case FSFilter.DirOnly:
+        case FSFilter.DirsOnly:
           return satisfiesRegex && entry.isDir;
-        case FSFilter.FileOnly:
+        case FSFilter.FilesOnly:
           return satisfiesRegex && entry.isFile;
         default:
           Context.fatalError('Invalid `fsFilter` parameter ("$fsFilter"). Must be compatible with AutoComplete.FSFilter enum.', Context.currentPos());
