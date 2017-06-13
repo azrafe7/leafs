@@ -1,17 +1,27 @@
 package leafs;
 
+import leafs.FSTree.FSEntry;
+
 #if macro
 import haxe.macro.Context;
 import haxe.macro.Expr;
 #end
 
+@:enum abstract FSFilter(String) to String {
+  var All = "ALL";
+  var DirOnly = "DIR_ONLY";
+  var FileOnly = "FILES_ONLY";
+}
 
 // adapted from http://code.haxe.org/category/macros/completion-from-url.html
 class AutoComplete {
   
-  public static var INVALID_CHARS_REGEX:EReg = ~/[^a-zA-Z_0-9]/g;
+  static public var LOG:Bool = true;
   
-  macro public static function build(entries:Array<String>, varName:String):Array<Field> {
+  static public var INVALID_CHARS_REGEX:EReg = ~/[^a-zA-Z_0-9]/g;
+  
+  
+  macro static public function build(entries:Array<String>, varName:String):Array<Field> {
 
     var validIds = entries.map(toValidId);
     var duplicates = [];
@@ -44,17 +54,45 @@ class AutoComplete {
     };
     fields.push(field);
     
-    Context.warning("AutoComplete.build: " + validIds.length + " entries processed.", Context.currentPos());
+    if (LOG) {
+      Sys.println("[AutoComplete.build] " + validIds.length + " entries processed");
+      for (i in 0...entries.length) {
+        Sys.println('  ${validIds[i]}: "${entries[i]}"');
+      }
+    }
     return fields;
   }
   
-  macro static public function fromFS(root:String, recurse:Bool, varName:String, ?filter:FSTree->Bool):Array<Field> {
-    var fsRoot = new FSTree(root).populate(recurse);
-    var entries = fsRoot.toFlatArray();
-    if (filter != null) entries = entries.filter(filter);
-    var paths = entries.map(function (e) { return e.fullName; });
+  macro static public function fromFS(root:String, recurse:Bool, varName:String, ?fsFilter:String, ?regexFilter:String, ?regexOptions:String):Array<Field> {
+    var entries = new FSTree(root).populate(recurse).toFlatArray();
     
-    return build(paths, varName);
+    if (fsFilter == null) fsFilter = FSFilter.All;
+    if (regexOptions == null) regexOptions = "";
+    if (regexFilter == null) regexFilter = ".*";
+    
+    var regex = new EReg(regexFilter, regexOptions);
+    
+    function include(entry:FSTree):Bool {
+      var satisfiesRegex = regex.match(entry.fullName);
+      if (!satisfiesRegex) return false;
+      return switch (fsFilter) {
+        case FSFilter.All:
+          return satisfiesRegex;
+        case FSFilter.DirOnly:
+          return satisfiesRegex && entry.isDir;
+        case FSFilter.FileOnly:
+          return satisfiesRegex && entry.isFile;
+        default:
+          throw ("Invalid fsFilter (must be compatible with FSFilter enum)");// , Context.currentPos());
+      }
+    }
+    
+    //var includedEntries:Array<FSTree> = entries.filter(include);
+    //var includedPaths:Array<String> = [for (e in includedEntries) e.fullName];
+    
+    //return includedPaths;
+    var fields = build(["qwrqr"], "qwer");
+    return fields;
   }
   
   /** 

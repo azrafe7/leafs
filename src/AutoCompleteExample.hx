@@ -1,5 +1,7 @@
 package;
 
+import leafs.AutoComplete;
+import leafs.AutoComplete.FSFilter;
 import leafs.FSTree;
 import haxe.Json;
 import haxe.format.JsonPrinter;
@@ -17,10 +19,12 @@ static public function main() {
     
     var root = new FSTree("assets").populate(true); 
     
-    trace(AssetIds.all);
+    var x = AutoComplete.fromFS("assets", true, "all", FSFilter.FileOnly);
+    //trace(x.join('\n'));
+    //trace(AssetIds.all);
   }
 }
 
-@:build(leafs.AutoComplete.fromFS("assets", true, "all"))
+@:build(leafs.AutoComplete.fromFS("assets", true, "all", "DIR_ONLY"))
 class AssetIds {
 }
