@@ -31,6 +31,8 @@ class AutoComplete {
   #if !macro macro #end
   static public function generate(ids:Array<String>, ?values:Array<String>, ?varName):Array<Field> {
 
+    var headerDoc = "AutoComplete-generated:";
+    
     if (values == null) values = [].concat(ids);
     else if (values.length != ids.length) {
       Context.fatalError('values.length != ids.length (${ids.length} != ${values.length}).', Context.currentPos());
@@ -43,13 +45,13 @@ class AutoComplete {
     }
 
     var fields = [];
-    var keyValuePairs = [for (i in 0...validIds.length) '\t${validIds[i]}: "${values[i]}"'];
+    var keyValuePairs = [for (i in 0...validIds.length) '  ${validIds[i]}: "${values[i]}"'];
     
     if (varName == null) { // create static fields
       for (i in 0...validIds.length) {
         fields.push({
           name: validIds[i],
-          doc: 'AutoComplete-generated: "${values[i]}".',
+          doc: '$headerDoc "<code>${values[i]}</code>".',
           access: [Access.APublic, Access.AStatic, Access.AInline],
           kind: FieldType.FVar(macro :String, macro $v{values[i]}),
           pos: Context.currentPos()
@@ -74,7 +76,7 @@ class AutoComplete {
       
       var field:Field = {
         name: varName,
-        doc: 'AutoComplete-generated: \n${keyValuePairs.join("\n")}',
+        doc: '$headerDoc \n<pre>${keyValuePairs.map(function(s) return "<code>" + s + "</code>").join("\n")}</pre>',
         access: [Access.AStatic, Access.APublic],
         kind: FieldType.FVar(objType, objExpr),
         pos: Context.currentPos(),
@@ -84,7 +86,7 @@ class AutoComplete {
     
     if (LOG) {
       var injectedAs = varName == null ? 'static vars' : 'anon object `$varName`';
-      Sys.println("[AutoComplete.generate] " + validIds.length + " entries processed (as " + injectedAs + ")");
+      Sys.println("[AutoComplete.generate] " + validIds.length + " entries injected (as " + injectedAs + ")");
       Sys.println(keyValuePairs.join("\n"));
     }
     
@@ -112,7 +114,7 @@ class AutoComplete {
         case FSFilter.FileOnly:
           return satisfiesRegex && entry.isFile;
         default:
-          Context.fatalError("Invalid fsFilter: " + fsFilter + ". Must be compatible with FSFilter enum.", Context.currentPos());
+          Context.fatalError('Invalid `fsFilter` parameter ("$fsFilter"). Must be compatible with AutoComplete.FSFilter enum.', Context.currentPos());
       }
     }
     
@@ -126,7 +128,7 @@ class AutoComplete {
   /** 
    * Transform `id` into a valid haxe identifier by replacing forbidden characters. 
    * 
-   * NOTE; this mainly addresses transforming filenames/paths into valid haxe identifiers
+   * NOTE: this mainly addresses transforming filenames/paths into valid haxe identifiers
    *       (like haxeFlixel does), but doesn't guarantee to have a valid id back 
    *       (f.e. doesn't take into account reserved words).
    */ 

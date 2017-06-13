@@ -27,7 +27,7 @@ static public function main() {
   }
 }
 
-@:build(leafs.AutoComplete.fromFS("assets", true, "all", "DIRS_ONLY"))
-//@:build(leafs.AutoComplete.build(["one", "two"], "all"))
+//@:build(leafs.AutoComplete.fromFS("assets", true, "all", null, ".*caps.*", "i"))
+@:build(leafs.AutoComplete.build(["one", "two"], "all"))
 class AssetIds {
 }
