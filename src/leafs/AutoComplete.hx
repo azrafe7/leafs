@@ -10,9 +10,9 @@ import haxe.macro.Expr;
 #end
 
 @:enum abstract FSFilter(String) from String to String {
-  var Any = "ANY";
-  var DirsOnly = "DIRS_ONLY";
-  var FilesOnly = "FILES_ONLY";
+  var ANY = "ANY";
+  var DIRS_ONLY = "DIRS_ONLY";
+  var FILES_ONLY = "FILES_ONLY";
 }
 
 class AutoComplete {
@@ -98,7 +98,7 @@ class AutoComplete {
   static public function fromFS(root:String, recurse:Bool, ?varName:String, ?fsFilter:FSFilter, ?regexFilter:String, ?regexOptions:String):Array<Field> {
     var entries = new FSTree(root).populate(recurse).toFlatArray();
     
-    if (fsFilter == null) fsFilter = FSFilter.Any;
+    if (fsFilter == null) fsFilter = FSFilter.ANY;
     if (regexOptions == null) regexOptions = "";
     if (regexFilter == null) regexFilter = ".*";
     
@@ -108,11 +108,11 @@ class AutoComplete {
       var satisfiesRegex = regex.match(entry.fullName);
       if (!satisfiesRegex) return false;
       return switch (fsFilter) {
-        case FSFilter.Any:
+        case FSFilter.ANY:
           return satisfiesRegex;
-        case FSFilter.DirsOnly:
+        case FSFilter.DIRS_ONLY:
           return satisfiesRegex && entry.isDir;
-        case FSFilter.FilesOnly:
+        case FSFilter.FILES_ONLY:
           return satisfiesRegex && entry.isFile;
         default:
           Context.fatalError('Invalid `fsFilter` parameter ("$fsFilter"). Must be compatible with AutoComplete.FSFilter enum.', Context.currentPos());

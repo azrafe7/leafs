@@ -6,16 +6,16 @@ import sys.FileSystem;
 
 
 enum FSErrorPolicy {
-  Quiet;
-  Throw;
-  Log;
-  Custom(handler:/*path:*/String->/*error:*/FSError->/*halt:*/Bool);
+  QUIET;
+  THROW;
+  LOG;
+  CUSTOM(handler:/*path:*/String->/*error:*/FSError->/*halt:*/Bool);
 }
 
 
 class FSTree extends FSEntry {
   
-  static public var errorPolicy:FSErrorPolicy = FSErrorPolicy.Log;
+  static public var errorPolicy:FSErrorPolicy = FSErrorPolicy.LOG;
   
   public var children:Array<FSTree> = [];
   
@@ -118,12 +118,12 @@ class FSTree extends FSEntry {
   inline function handleError(path:String, error:Dynamic):Void {
     var fsError = new FSError(path, error);
     switch (FSTree.errorPolicy) {
-      case Quiet:
-      case Throw:
+      case QUIET:
+      case THROW:
         throw fsError;
-      case Log:
+      case LOG:
         trace(fsError.toString());
-      case Custom(handler):
+      case CUSTOM(handler):
         if (handler(path, error)) throw fsError;
       default:
         throw "Unexpected!";
