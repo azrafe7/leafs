@@ -1,43 +1,126 @@
 package leafs;
 
+import haxe.macro.ExprTools;
+import haxe.macro.Printer;
+import leafs.FSTree.FSEntry;
+
 #if macro
 import haxe.macro.Context;
 import haxe.macro.Expr;
 #end
 
+@:enum abstract FSFilter(String) from String to String {
+  var All = "ALL";
+  var DirOnly = "DIRS_ONLY";
+  var FileOnly = "FILES_ONLY";
+}
 
-// adapted from http://code.haxe.org/category/macros/completion-from-url.html
 class AutoComplete {
   
-  public static var INVALID_CHARS_REGEX:EReg = ~/[^a-zA-Z_0-9]/g;
+  static public var LOG:Bool = true;
   
-  macro public static function build(root:String, recurse:Bool, varName:String):Array<Field> {
-    var root = new FSTree(root).populate(recurse);
+  static public var INVALID_CHARS_REGEX:EReg = ~/[^a-zA-Z_0-9]/g;
+  
+  #if !macro macro #end
+  static public function build(ids:Array<String>, ?values:Array<String>, ?varName:String):Array<Field> {
+    var fields = Context.getBuildFields();
+    return fields.concat(generate(ids, values, varName));
+  }
+  
+  // adapted from HaxeFlixel FlxAssets/FlxAssetPaths
+  #if !macro macro #end
+  static public function generate(ids:Array<String>, ?values:Array<String>, ?varName):Array<Field> {
 
-    var entries = root.toStringArray();
-
-    var validIds = entries.map(toValidId);
+    if (values == null) values = [].concat(ids);
+    else if (values.length != ids.length) {
+      Context.fatalError('values.length != ids.length (${ids.length} != ${values.length}).', Context.currentPos());
+    }
+    
+    var validIds = ids.map(toValidId);
     var duplicates = [];
     if (hasDuplicates(validIds, duplicates)) {
-      Context.error("Found colliding id names (" + duplicates + ")");
+      Context.fatalError("Found colliding id names (" + duplicates + ").", Context.currentPos());
     }
 
-    var fields = Context.getBuildFields();
-    var gtype = TAnonymous([for (i in 0...entries.length) { 
-      name: validIds[i], 
-      pos: Context.currentPos(), 
-      kind: FVar(macro:String, entries[i]) 
-    }]);
+    var fields = [];
+    var keyValuePairs = [for (i in 0...validIds.length) '\t${validIds[i]}: "${values[i]}"'];
     
-    var gids:Field = {
-      name: varName,
-      pos: Context.currentPos(),
-      kind: FVar(gtype),
-      access: [AStatic],
-    };
-    fields.push(gids);
+    if (varName == null) { // create static fields
+      for (i in 0...validIds.length) {
+        fields.push({
+          name: validIds[i],
+          doc: 'AutoComplete-generated: "${values[i]}".',
+          access: [Access.APublic, Access.AStatic, Access.AInline],
+          kind: FieldType.FVar(macro :String, macro $v{values[i]}),
+          pos: Context.currentPos()
+        });
+      }
+    } else { // create anon struct
+      var objType:ComplexType = TAnonymous([for (i in 0...validIds.length) { 
+        name: validIds[i], 
+        pos: Context.currentPos(), 
+        kind: FVar(macro :String) 
+      }]);
+      
+      var objExpr:Expr = {
+        expr: EObjectDecl([
+          for (i in 0...validIds.length) {
+            field: validIds[i],
+            expr: macro $v{values[i]}
+          }
+        ]),
+        pos: Context.currentPos()
+      }
+      
+      var field:Field = {
+        name: varName,
+        doc: 'AutoComplete-generated: \n${keyValuePairs.join("\n")}',
+        access: [Access.AStatic, Access.APublic],
+        kind: FieldType.FVar(objType, objExpr),
+        pos: Context.currentPos(),
+      };
+      fields.push(field);
+    }
+    
+    if (LOG) {
+      var injectedAs = varName == null ? 'static vars' : 'anon object `$varName`';
+      Sys.println("[AutoComplete.generate] " + validIds.length + " entries processed (as " + injectedAs + ")");
+      Sys.println(keyValuePairs.join("\n"));
+    }
     
     return fields;
+  }
+  
+  #if !macro macro #end
+  static public function fromFS(root:String, recurse:Bool, ?varName:String, ?fsFilter:FSFilter, ?regexFilter:String, ?regexOptions:String):Array<Field> {
+    var entries = new FSTree(root).populate(recurse).toFlatArray();
+    
+    if (fsFilter == null) fsFilter = FSFilter.All;
+    if (regexOptions == null) regexOptions = "";
+    if (regexFilter == null) regexFilter = ".*";
+    
+    var regex = new EReg(regexFilter, regexOptions);
+    
+    function include(entry:FSTree):Bool {
+      var satisfiesRegex = regex.match(entry.fullName);
+      if (!satisfiesRegex) return false;
+      return switch (fsFilter) {
+        case FSFilter.All:
+          return satisfiesRegex;
+        case FSFilter.DirOnly:
+          return satisfiesRegex && entry.isDir;
+        case FSFilter.FileOnly:
+          return satisfiesRegex && entry.isFile;
+        default:
+          Context.fatalError("Invalid fsFilter: " + fsFilter + ". Must be compatible with FSFilter enum.", Context.currentPos());
+      }
+    }
+    
+    var includedEntries:Array<FSTree> = entries.filter(include);
+    var includedPaths:Array<String> = [for (e in includedEntries) e.fullName];
+    
+    var fields = Context.getBuildFields();
+    return fields.concat(generate(includedPaths, null, varName));
   }
   
   /** 

@@ -383,7 +383,7 @@ class TestValidIds extends BuddySuite {
         Assert.isTrue(dups[0] == "_4_3");
         
         var mapped = [for (e in assets) '"$e" => "${AutoComplete.toValidId(e)}"'];
-        //trace('xformed:\n\t  ' + mapped.join('\n\t  '));
+        //trace('dups:\n\t  ' + dups.join('\n\t  '));
       });
     });
   }
