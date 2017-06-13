@@ -19,12 +19,15 @@ static public function main() {
     
     var root = new FSTree("assets").populate(true); 
     
-    var x = AutoComplete.fromFS("assets", true, "all", FSFilter.FileOnly);
+    //var x = AutoComplete.fromFS("assets", true, "all", FSFilter.FileOnly);
     //trace(x.join('\n'));
     //trace(AssetIds.all);
+    
+    trace(AssetIds);
   }
 }
 
-@:build(leafs.AutoComplete.fromFS("assets", true, "all", "DIR_ONLY"))
+@:build(leafs.AutoComplete.fromFS("assets", true, "all", "DIRS_ONLY"))
+//@:build(leafs.AutoComplete.build(["one", "two"], "all"))
 class AssetIds {
 }

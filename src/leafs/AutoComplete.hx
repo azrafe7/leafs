@@ -1,5 +1,7 @@
 package leafs;
 
+import haxe.macro.ExprTools;
+import haxe.macro.Printer;
 import leafs.FSTree.FSEntry;
 
 #if macro
@@ -7,21 +9,27 @@ import haxe.macro.Context;
 import haxe.macro.Expr;
 #end
 
-@:enum abstract FSFilter(String) to String {
+@:enum abstract FSFilter(String) from String to String {
   var All = "ALL";
-  var DirOnly = "DIR_ONLY";
+  var DirOnly = "DIRS_ONLY";
   var FileOnly = "FILES_ONLY";
 }
 
-// adapted from http://code.haxe.org/category/macros/completion-from-url.html
 class AutoComplete {
   
   static public var LOG:Bool = true;
   
   static public var INVALID_CHARS_REGEX:EReg = ~/[^a-zA-Z_0-9]/g;
   
+  #if !macro macro #end
+  static public function build(entries:Array<String>, varName:String):Array<Field> {
+    var fields = Context.getBuildFields();
+    return fields.concat(generate(entries, varName));
+  }
   
-  macro static public function build(entries:Array<String>, varName:String):Array<Field> {
+  // adapted from HaxeFlixel FlxAssets/FlxAssetPaths
+  #if !macro macro #end
+  static public function generate(entries:Array<String>, varName:String):Array<Field> {
 
     var validIds = entries.map(toValidId);
     var duplicates = [];
@@ -29,7 +37,7 @@ class AutoComplete {
       Context.error("Found colliding id names (" + duplicates + ")", Context.currentPos());
     }
 
-    var fields = Context.getBuildFields();
+    var fields = [];
     var objType:ComplexType = TAnonymous([for (i in 0...entries.length) { 
       name: validIds[i], 
       pos: Context.currentPos(), 
@@ -39,8 +47,8 @@ class AutoComplete {
     var objExpr:Expr = {
       expr: EObjectDecl([
         for (i in 0...entries.length) {
-          field: entries[i],
-          expr: macro $v{validIds[i]}
+          field: validIds[i],
+          expr: macro $v{entries[i]}
         }
       ]),
       pos: Context.currentPos()
@@ -49,13 +57,13 @@ class AutoComplete {
     var field:Field = {
       name: varName,
       pos: Context.currentPos(),
-      kind: FVar(objType),
+      kind: FVar(objType, objExpr),
       access: [AStatic, APublic],
     };
     fields.push(field);
     
     if (LOG) {
-      Sys.println("[AutoComplete.build] " + validIds.length + " entries processed");
+      Sys.println("[AutoComplete.generate] " + validIds.length + " entries processed");
       for (i in 0...entries.length) {
         Sys.println('  ${validIds[i]}: "${entries[i]}"');
       }
@@ -63,7 +71,8 @@ class AutoComplete {
     return fields;
   }
   
-  macro static public function fromFS(root:String, recurse:Bool, varName:String, ?fsFilter:String, ?regexFilter:String, ?regexOptions:String):Array<Field> {
+  #if !macro macro #end
+  static public function fromFS(root:String, recurse:Bool, varName:String, ?fsFilter:FSFilter, ?regexFilter:String, ?regexOptions:String):Array<Field> {
     var entries = new FSTree(root).populate(recurse).toFlatArray();
     
     if (fsFilter == null) fsFilter = FSFilter.All;
@@ -83,16 +92,15 @@ class AutoComplete {
         case FSFilter.FileOnly:
           return satisfiesRegex && entry.isFile;
         default:
-          throw ("Invalid fsFilter (must be compatible with FSFilter enum)");// , Context.currentPos());
+          Context.fatalError("Invalid fsFilter: " + fsFilter + ". Must be compatible with FSFilter enum", Context.currentPos());
       }
     }
     
-    //var includedEntries:Array<FSTree> = entries.filter(include);
-    //var includedPaths:Array<String> = [for (e in includedEntries) e.fullName];
+    var includedEntries:Array<FSTree> = entries.filter(include);
+    var includedPaths:Array<String> = [for (e in includedEntries) e.fullName];
     
-    //return includedPaths;
-    var fields = build(["qwrqr"], "qwer");
-    return fields;
+    var fields = Context.getBuildFields();
+    return fields.concat(generate(includedPaths, varName));
   }
   
   /** 
