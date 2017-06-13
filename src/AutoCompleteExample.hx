@@ -23,11 +23,12 @@ static public function main() {
     //trace(x.join('\n'));
     //trace(AssetIds.all);
     
-    trace(AssetIds.all);
+    trace(AssetIds);
   }
 }
 
-@:build(leafs.AutoComplete.fromFS("assets", true, "all", "FILES_ONLY", ".*caps.*", "i"))
-//@:build(leafs.AutoComplete.build(["one", "two"], "all"))
+@:build(leafs.AutoComplete.fromFS("assets", null, null, "FILES_ONLY"))
+@:build(leafs.AutoComplete.fromFS("assets", true, "dirs", "DIRS_ONLY"))
+@:build(leafs.AutoComplete.build([".ONE", "2"], "custom"))
 class AssetIds {
 }

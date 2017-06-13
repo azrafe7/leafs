@@ -77,7 +77,7 @@ class AutoComplete {
       
       var field:Field = {
         name: varName,
-        doc: '$headerDoc \n<pre>${keyValuePairs.map(function(s) return "<code>" + s + "</code>").join("\n")}</pre>',
+        doc: '$headerDoc \n${keyValuePairs.map(function(s) return "<b>" + s + "</b>").join("\n")}',
         access: [Access.AStatic, Access.APublic],
         kind: FieldType.FVar(objType, objExpr),
         pos: Context.currentPos(),
@@ -86,7 +86,8 @@ class AutoComplete {
     }
     
     if (LOG) {
-      var injectedAs = varName == null ? 'static vars' : 'anon object `$varName`';
+      var classPath = Context.getLocalClass().toString();
+      var injectedAs = varName == null ? 'static vars in `$classPath`' : 'anon object in `$classPath.$varName`';
       Sys.println("[AutoComplete.generate] " + validIds.length + " entries injected (as " + injectedAs + ")");
       Sys.println(keyValuePairs.join("\n"));
     }
