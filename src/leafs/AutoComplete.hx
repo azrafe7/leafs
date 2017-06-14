@@ -45,14 +45,16 @@ class AutoComplete {
       Context.fatalError("Found colliding id names (" + duplicates + ").", Context.currentPos());
     }
 
-    var fields = [];
-    var keyValuePairs = [for (i in 0...validIds.length) '  ${validIds[i]}: "${values[i]}"'];
+    inline function toDocKeyValue(key:String, value:String, indent:String = "  "):String {
+      return '<b>' + indent + key + '</b>: <code>"' + value + '"</code> ';
+    }
     
+    var fields = [];
     if (varName == null) { // create static fields
       for (i in 0...validIds.length) {
         fields.push({
           name: validIds[i],
-          doc: '$headerDoc "<code>${values[i]}</code>".',
+          doc: '$headerDoc \n' + toDocKeyValue(validIds[i], values[i], ""),
           access: [Access.APublic, Access.AStatic, Access.AInline],
           kind: FieldType.FVar(macro :String, macro $v{values[i]}),
           pos: Context.currentPos()
@@ -77,7 +79,7 @@ class AutoComplete {
       
       var field:Field = {
         name: varName,
-        doc: '$headerDoc \n${keyValuePairs.map(function(s) return "<b>" + s + "</b>").join("\n")}',
+        doc: '$headerDoc \n' + [for (i in 0...validIds.length) toDocKeyValue(validIds[i], values[i])].join("\n"),
         access: [Access.AStatic, Access.APublic],
         kind: FieldType.FVar(objType, objExpr),
         pos: Context.currentPos(),
@@ -89,7 +91,7 @@ class AutoComplete {
       var classPath = Context.getLocalClass().toString();
       var injectedAs = varName == null ? 'static vars in `$classPath`' : 'anon object in `$classPath.$varName`';
       Sys.println("[AutoComplete.generate] " + validIds.length + " entries injected (as " + injectedAs + ")");
-      Sys.println(keyValuePairs.join("\n"));
+      Sys.println([for (i in 0...validIds.length) '  ${validIds[i]}: ${values[i]}'].join("\n"));
     }
     
     return fields;
