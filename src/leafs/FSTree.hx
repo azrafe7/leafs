@@ -116,7 +116,7 @@ class FSTree extends FSEntry {
     if (regexFilter == null) regexFilter = ".*";
     
     var regex = new EReg(regexFilter, regexOptions);
-    
+
     function include(entry:FSTree):Bool {
       var satisfiesRegex = regex.match(entry.fullName);
       if (!satisfiesRegex) return false;
@@ -128,7 +128,7 @@ class FSTree extends FSEntry {
         case FSFilter.FILES_ONLY:
           return satisfiesRegex && entry.isFile;
         default:
-          var errorMessage = 'Invalid `fsFilter` parameter ("$fsFilter"). Must be compatible with AutoComplete.FSFilter enum.';
+          var errorMessage = 'Invalid `fsFilter` parameter ("$fsFilter"). Must be compatible with FSFilter enum.';
         #if macro
           haxe.macro.Context.fatalError(errorMessage, haxe.macro.Context.currentPos());
         #else
