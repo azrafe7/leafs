@@ -1,4 +1,4 @@
-package leafs;
+package leafs.macro;
 
 import leafs.FSTree.FSEntry;
 import leafs.FSTree.FSFilter;
@@ -99,7 +99,7 @@ class AutoComplete {
       var classPath = Context.getLocalClass().toString();
       var injectedAs = varName == null ? 'static vars in `$classPath`' : 'anon object in `$classPath.$varName`';
       Sys.println("[AutoComplete.generate] " + validIds.length + " entries injected (as " + injectedAs + ")");
-      Sys.println([for (i in 0...validIds.length) '  ${validIds[i]}: ${values[i]}'].join("\n"));
+      Sys.println([for (i in 0...validIds.length) '  ${validIds[i]}: "${values[i]}"'].join("\n"));
     }
     
     return fields;

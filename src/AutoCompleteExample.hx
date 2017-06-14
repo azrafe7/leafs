@@ -1,6 +1,6 @@
 package;
 
-import leafs.AutoComplete;
+import leafs.macro.AutoComplete;
 import leafs.FSTree;
 import haxe.Json;
 import haxe.format.JsonPrinter;
@@ -10,9 +10,6 @@ import sys.io.File;
 
 
 class AutoCompleteExample {
-#if macro
-  static public function arr():Array<String> return ["on", ".two"];
-#end
 
 static public function main() {
     
@@ -28,10 +25,10 @@ static public function main() {
   }
 }
 
-@:build(leafs.AutoComplete.fromFS("assets", null, null, "FILES_ONLY"))
-@:build(leafs.AutoComplete.fromFS("assets", true, "dirs", "DIRS_ONLY"))
-@:build(leafs.AutoComplete.build([".ONE", "two\\"], "custom"))
-@:build(leafs.AutoComplete.build(["1", "2"], ["1", "2"], "numbers"))
+@:build(leafs.macro.AutoComplete.fromFS("assets", null, null, "FILES_ONLY"))
+@:build(leafs.macro.AutoComplete.fromFS("assets", true, "dirs", "DIRS_ONLY"))
+@:build(leafs.macro.AutoComplete.build([".ONE", "two\\"], "custom"))
+@:build(leafs.macro.AutoComplete.build(["1", "2"], ["1", "2"], "numbers"))
 class AssetIds {
   public static var assets = { test: "ASSETS" };
   public static var assets2 = { test: "ASSETS2" };
