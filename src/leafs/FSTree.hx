@@ -108,7 +108,7 @@ class FSTree extends FSEntry {
     return entries;
   }
 
-  static public function getFilteredPaths(rootPath:String, recurse:Bool, ?varName:String, ?fsFilter:FSFilter, ?regexFilter:String, ?regexOptions:String):Array<String> {
+  static public function getFilteredEntries(rootPath:String, recurse:Bool, ?fsFilter:FSFilter, ?regexFilter:String, ?regexOptions:String):Array<FSTree> {
     var entries = new FSTree(rootPath).populate(recurse).toFlatArray();
     
     if (fsFilter == null) fsFilter = FSFilter.ANY;
@@ -138,6 +138,12 @@ class FSTree extends FSEntry {
     }
     
     var includedEntries:Array<FSTree> = entries.filter(include);
+    
+    return includedEntries;
+  }
+  
+  static public function getFilteredPaths(rootPath:String, recurse:Bool, ?fsFilter:FSFilter, ?regexFilter:String, ?regexOptions:String):Array<String> {
+    var includedEntries:Array<FSTree> = getFilteredEntries(rootPath, recurse, fsFilter, regexFilter, regexOptions);
     var includedPaths:Array<String> = [for (e in includedEntries) e.fullName];
     
     return includedPaths;

@@ -26,7 +26,7 @@ class AutoComplete {
   
   #if !macro macro #end
   static public function fromFS(rootPath:String, recurse:Bool, ?varName:String, ?fsFilter:FSFilter, ?regexFilter:String, ?regexOptions:String):Array<Field> {
-    var includedPaths:Array<String> = FSTree.getFilteredPaths(rootPath, recurse, varName, fsFilter, regexFilter, regexOptions);
+    var includedPaths:Array<String> = FSTree.getFilteredPaths(rootPath, recurse, fsFilter, regexFilter, regexOptions);
     
     var fields = Context.getBuildFields();
     return fields.concat(generate(includedPaths, null, varName));
