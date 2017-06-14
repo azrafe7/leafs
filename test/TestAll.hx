@@ -4,7 +4,7 @@ import buddy.BuddySuite;
 import buddy.Buddy;
 import buddy.SuitesRunner;
 import haxe.io.Path;
-import leafs.AutoComplete;
+import leafs.macro.AutoComplete;
 import sys.FileSystem;
 import utest.Assert;
 import leafs.FSTree;
@@ -347,7 +347,7 @@ class TestValidIds extends BuddySuite {
         var root = new FSTree(ASSETS_DIR).populate(true);
         var entries = root.toStringArray();
         
-        var xformed = entries.map(AutoComplete.toValidId);
+        var xformed = entries.map(AutoComplete.toValidHaxeId);
         
         Assert.isFalse(AutoComplete.hasDuplicates(xformed));
         
@@ -358,7 +358,7 @@ class TestValidIds extends BuddySuite {
       });
       
       it('From mocked strings', function (done) {
-        var xformed = mockedAssets.map(AutoComplete.toValidId);
+        var xformed = mockedAssets.map(AutoComplete.toValidHaxeId);
         
         Assert.isFalse(AutoComplete.hasDuplicates(xformed));
         
@@ -373,7 +373,7 @@ class TestValidIds extends BuddySuite {
         var dup = ".4.3";
         var assets = [].concat(mockedAssets);
         assets.push(dup);
-        var xformed = assets.map(AutoComplete.toValidId);
+        var xformed = assets.map(AutoComplete.toValidHaxeId);
         
         Assert.isTrue(AutoComplete.hasDuplicates(xformed));
         
@@ -382,7 +382,7 @@ class TestValidIds extends BuddySuite {
         Assert.isTrue(dups.length == 1);
         Assert.isTrue(dups[0] == "_4_3");
         
-        var mapped = [for (e in assets) '"$e" => "${AutoComplete.toValidId(e)}"'];
+        var mapped = [for (e in assets) '"$e" => "${AutoComplete.toValidHaxeId(e)}"'];
         //trace('dups:\n\t  ' + dups.join('\n\t  '));
       });
     });
