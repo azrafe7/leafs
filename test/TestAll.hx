@@ -4,7 +4,7 @@ import buddy.BuddySuite;
 import buddy.Buddy;
 import buddy.SuitesRunner;
 import haxe.io.Path;
-import leafs.macro.AutoComplete;
+import leafs.macros.AutoComplete;
 import sys.FileSystem;
 import utest.Assert;
 import leafs.FSTree;

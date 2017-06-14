@@ -1,4 +1,4 @@
-package leafs.macro;
+package leafs.macros;
 
 import leafs.FSTree.FSEntry;
 import leafs.FSTree.FSFilter;
