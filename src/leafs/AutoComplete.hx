@@ -12,9 +12,11 @@ import haxe.macro.Expr;
 
 
 class AutoComplete {
-  
+
+  /** If true a report log will be printed to stdout. */
   static public var LOG:Bool = true;
   
+  /** RegEx of invalid id chars (used by toValidId()). */
   static public var INVALID_CHARS_REGEX:EReg = ~/[^a-zA-Z_0-9]/g;
   
   
@@ -32,7 +34,9 @@ class AutoComplete {
     return fields.concat(generate(includedPaths, null, varName));
   }
   
-  // adapted from HaxeFlixel FlxAssets/FlxAssetPaths
+  /** 
+   * Adapted from HaxeFlixel FlxAssets/FlxAssetPaths, and http://code.haxe.org/category/macros/completion-from-url.html
+   */
   #if !macro macro #end
   static public function generate(ids:Array<String>, ?values:Array<String>, ?varName):Array<Field> {
 
@@ -43,7 +47,7 @@ class AutoComplete {
       Context.fatalError('values.length != ids.length (${ids.length} != ${values.length}).', Context.currentPos());
     }
     
-    var validIds = ids.map(toValidId);
+    var validIds = ids.map(toValidHaxeId);
     var duplicates = [];
     if (hasDuplicates(validIds, duplicates)) {
       Context.fatalError("Found colliding id names (" + duplicates + ").", Context.currentPos());
@@ -108,7 +112,7 @@ class AutoComplete {
    *       (like haxeFlixel does), but doesn't guarantee to have a valid id back 
    *       (f.e. doesn't take into account reserved words).
    */ 
-  public static function toValidId(id:String):String {
+  public static function toValidHaxeId(id:String):String {
     var startingDigitRegex:EReg = ~/^[0-9]/g;
     var dirSepRegex:EReg = ~/[\/\\]/g;
     var invalidCharsRegex:EReg = INVALID_CHARS_REGEX;
@@ -120,6 +124,7 @@ class AutoComplete {
     return res;
   }
   
+  /** Returns true if `array` contains duplicates, and appends them into `duplicates` (if not null). */
   public static function hasDuplicates(array:Array<String>, ?duplicates:Array<String>):Bool {
     if (array.length <= 1) return false;
     
