@@ -12,6 +12,12 @@ enum FSErrorPolicy {
   CUSTOM(handler:/*path:*/String->/*error:*/FSError->/*halt:*/Bool);
 }
 
+@:enum abstract FSFilter(String) from String to String {
+  var ANY = "ANY";
+  var DIRS_ONLY = "DIRS_ONLY";
+  var FILES_ONLY = "FILES_ONLY";
+}
+
 
 class FSTree extends FSEntry {
   
@@ -100,6 +106,41 @@ class FSTree extends FSEntry {
       };
     });
     return entries;
+  }
+
+  static public function getFilteredPaths(rootPath:String, recurse:Bool, ?varName:String, ?fsFilter:FSFilter, ?regexFilter:String, ?regexOptions:String):Array<String> {
+    var entries = new FSTree(rootPath).populate(recurse).toFlatArray();
+    
+    if (fsFilter == null) fsFilter = FSFilter.ANY;
+    if (regexOptions == null) regexOptions = "";
+    if (regexFilter == null) regexFilter = ".*";
+    
+    var regex = new EReg(regexFilter, regexOptions);
+    
+    function include(entry:FSTree):Bool {
+      var satisfiesRegex = regex.match(entry.fullName);
+      if (!satisfiesRegex) return false;
+      return switch (fsFilter) {
+        case FSFilter.ANY:
+          return satisfiesRegex;
+        case FSFilter.DIRS_ONLY:
+          return satisfiesRegex && entry.isDir;
+        case FSFilter.FILES_ONLY:
+          return satisfiesRegex && entry.isFile;
+        default:
+          var errorMessage = 'Invalid `fsFilter` parameter ("$fsFilter"). Must be compatible with AutoComplete.FSFilter enum.';
+        #if macro
+          haxe.macro.Context.fatalError(errorMessage, haxe.macro.Context.currentPos());
+        #else
+          throw errorMessage;
+        #end
+      }
+    }
+    
+    var includedEntries:Array<FSTree> = entries.filter(include);
+    var includedPaths:Array<String> = [for (e in includedEntries) e.fullName];
+    
+    return includedPaths;
   }
   
   function _populate(parentEntry:FSTree, recurse:Bool):Void {

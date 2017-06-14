@@ -1,6 +1,7 @@
 package leafs;
 
 import leafs.FSTree.FSEntry;
+import leafs.FSTree.FSFilter;
 
 #if macro
 import haxe.macro.ExprTools;
@@ -9,11 +10,6 @@ import haxe.macro.Context;
 import haxe.macro.Expr;
 #end
 
-@:enum abstract FSFilter(String) from String to String {
-  var ANY = "ANY";
-  var DIRS_ONLY = "DIRS_ONLY";
-  var FILES_ONLY = "FILES_ONLY";
-}
 
 class AutoComplete {
   
@@ -26,6 +22,14 @@ class AutoComplete {
   static public function build(ids:Array<String>, ?values:Array<String>, ?varName:String):Array<Field> {
     var fields = Context.getBuildFields();
     return fields.concat(generate(ids, values, varName));
+  }
+  
+  #if !macro macro #end
+  static public function fromFS(rootPath:String, recurse:Bool, ?varName:String, ?fsFilter:FSFilter, ?regexFilter:String, ?regexOptions:String):Array<Field> {
+    var includedPaths:Array<String> = FSTree.getFilteredPaths(rootPath, recurse, varName, fsFilter, regexFilter, regexOptions);
+    
+    var fields = Context.getBuildFields();
+    return fields.concat(generate(includedPaths, null, varName));
   }
   
   // adapted from HaxeFlixel FlxAssets/FlxAssetPaths
@@ -95,38 +99,6 @@ class AutoComplete {
     }
     
     return fields;
-  }
-  
-  #if !macro macro #end
-  static public function fromFS(root:String, recurse:Bool, ?varName:String, ?fsFilter:FSFilter, ?regexFilter:String, ?regexOptions:String):Array<Field> {
-    var entries = new FSTree(root).populate(recurse).toFlatArray();
-    
-    if (fsFilter == null) fsFilter = FSFilter.ANY;
-    if (regexOptions == null) regexOptions = "";
-    if (regexFilter == null) regexFilter = ".*";
-    
-    var regex = new EReg(regexFilter, regexOptions);
-    
-    function include(entry:FSTree):Bool {
-      var satisfiesRegex = regex.match(entry.fullName);
-      if (!satisfiesRegex) return false;
-      return switch (fsFilter) {
-        case FSFilter.ANY:
-          return satisfiesRegex;
-        case FSFilter.DIRS_ONLY:
-          return satisfiesRegex && entry.isDir;
-        case FSFilter.FILES_ONLY:
-          return satisfiesRegex && entry.isFile;
-        default:
-          Context.fatalError('Invalid `fsFilter` parameter ("$fsFilter"). Must be compatible with AutoComplete.FSFilter enum.', Context.currentPos());
-      }
-    }
-    
-    var includedEntries:Array<FSTree> = entries.filter(include);
-    var includedPaths:Array<String> = [for (e in includedEntries) e.fullName];
-    
-    var fields = Context.getBuildFields();
-    return fields.concat(generate(includedPaths, null, varName));
   }
   
   /** 

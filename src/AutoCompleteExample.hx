@@ -1,7 +1,6 @@
 package;
 
 import leafs.AutoComplete;
-import leafs.AutoComplete.FSFilter;
 import leafs.FSTree;
 import haxe.Json;
 import haxe.format.JsonPrinter;
@@ -23,12 +22,17 @@ static public function main() {
     //trace(x.join('\n'));
     //trace(AssetIds.all);
     
-    trace(AssetIds);
+    trace(AssetIds.assets);
+    trace(AssetIds.assets.test);
+    trace(AssetIds.assets2.test);
   }
 }
 
 @:build(leafs.AutoComplete.fromFS("assets", null, null, "FILES_ONLY"))
 @:build(leafs.AutoComplete.fromFS("assets", true, "dirs", "DIRS_ONLY"))
-@:build(leafs.AutoComplete.build([".ONE", "2"], "custom"))
+@:build(leafs.AutoComplete.build([".ONE", "two\\"], "custom"))
+@:build(leafs.AutoComplete.build(["1", "2"], ["1", "2"], "numbers"))
 class AssetIds {
+  public static var assets = { test: "ASSETS" };
+  public static var assets2 = { test: "ASSETS2" };
 }
