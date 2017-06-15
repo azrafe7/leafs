@@ -38,7 +38,7 @@ class AutoComplete {
    * Adapted from HaxeFlixel FlxAssets/FlxAssetPaths, and http://code.haxe.org/category/macros/completion-from-url.html
    */
   #if !macro macro #end
-  static public function generate(ids:Array<String>, ?values:Array<String>, ?varName):Array<Field> {
+  static public function generate(ids:Array<String>, ?values:Array<String>, ?varName:String):Array<Field> {
 
     var headerDoc = "AutoComplete-generated:";
     
