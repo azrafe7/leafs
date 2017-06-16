@@ -1,4 +1,4 @@
-package leafs.macros;
+package leafs;
 
 import haxe.Resource;
 import haxe.io.Bytes;
@@ -24,9 +24,9 @@ class Embedder {
 
     var headerDoc = "Embedder-generated:";
     
-    var validIds = (varName == null) ? names.map(AutoComplete.toValidHaxeId) : names;
+    var validIds = (varName == null) ? names.map(Utils.toValidHaxeId) : names;
     var duplicates = [];
-    if (AutoComplete.hasDuplicates(validIds, duplicates)) {
+    if (Utils.hasDuplicates(validIds, duplicates)) {
       Context.fatalError("Found colliding id names (" + duplicates + ").", Context.currentPos());
     }
 
@@ -34,14 +34,16 @@ class Embedder {
       return '<b>' + indent + key + '</b>: <code>"' + value + '"</code> ';
     }
     
+    var resources:Array<EmbeddedResource> = [for (i in validIds) new EmbeddedResource(i)];
+    
     var fields = [];
     if (varName == null) { // create static fields
       for (i in 0...validIds.length) {
         fields.push({
           name: validIds[i],
           doc: '$headerDoc \n' + toDocKeyValue(validIds[i], names[i], ""),
-          access: [Access.APublic, Access.AStatic, Access.AInline],
-          kind: FieldType.FVar(macro :EmbeddedResource, macro null),
+          access: [Access.APublic, Access.AStatic],
+          kind: FieldType.FVar(macro :EmbeddedResource, macro new EmbeddedResource($v{names[i]})),
           pos: Context.currentPos()
         });
       }
@@ -53,7 +55,7 @@ class Embedder {
       
       var field:Field = {
         name: varName,
-        doc: '$headerDoc \n' + [for (i in 0...validIds.length) toDocKeyValue(validIds[i], "")].join("\n"),
+        doc: '$headerDoc \n' + [for (i in 0...validIds.length) '<b>  "${validIds[i]}"</b>: EmbeddedResource'].join("\n"),
         access: [Access.AStatic, Access.APublic],
         kind: FieldType.FVar(macro :Map<String, EmbeddedResource>, macro $a{map}),
         pos: Context.currentPos(),

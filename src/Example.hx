@@ -13,7 +13,7 @@ class Example {
   static public function main() {
     
     // set custom policy for error handling
-    FSTree.errorPolicy = FSErrorPolicy.Custom(customErrorHandler);
+    FSTree.errorPolicy = FSErrorPolicy.CUSTOM(customErrorHandler);
     
     var root = new FSTree("assets"); 
     

@@ -1,7 +1,8 @@
-package leafs.macros;
+package leafs;
 
 import leafs.FSTree.FSEntry;
 import leafs.FSTree.FSFilter;
+import leafs.Utils;
 
 #if macro
 import haxe.macro.ExprTools;
@@ -15,9 +16,6 @@ class AutoComplete {
 
   /** If true a report log will be printed to stdout. */
   static public var LOG:Bool = true;
-  
-  /** RegEx of invalid id chars (used by toValidId()). */
-  static public var INVALID_CHARS_REGEX:EReg = ~/[^a-zA-Z_0-9]/g;
   
   
   #if !macro macro #end
@@ -47,9 +45,9 @@ class AutoComplete {
       Context.fatalError('values.length != ids.length (${ids.length} != ${values.length}).', Context.currentPos());
     }
     
-    var validIds = ids.map(toValidHaxeId);
+    var validIds = ids.map(Utils.toValidHaxeId);
     var duplicates = [];
-    if (hasDuplicates(validIds, duplicates)) {
+    if (Utils.hasDuplicates(validIds, duplicates)) {
       Context.fatalError("Found colliding id names (" + duplicates + ").", Context.currentPos());
     }
 
@@ -103,43 +101,5 @@ class AutoComplete {
     }
     
     return fields;
-  }
-  
-  /** 
-   * Transform `id` into a valid haxe identifier by replacing forbidden characters. 
-   * 
-   * NOTE: this mainly addresses transforming filenames/paths into valid haxe identifiers
-   *       (like haxeFlixel does), but doesn't guarantee to have a valid id back 
-   *       (f.e. doesn't take into account reserved words).
-   */ 
-  public static function toValidHaxeId(id:String):String {
-    var startingDigitRegex:EReg = ~/^[0-9]/g;
-    var dirSepRegex:EReg = ~/[\/\\]/g;
-    var invalidCharsRegex:EReg = INVALID_CHARS_REGEX;
-    
-    var res = id;
-    if (startingDigitRegex.match(res)) res = "_" + res;
-    res = dirSepRegex.replace(res, "__");
-    res = invalidCharsRegex.replace(res, "_");
-    return res;
-  }
-  
-  /** Returns true if `array` contains duplicates, and appends them into `duplicates` (if not null). */
-  public static function hasDuplicates(array:Array<String>, ?duplicates:Array<String>):Bool {
-    if (array.length <= 1) return false;
-    
-    var hasDups = false;
-    var sortedCopy = [].concat(array);
-    sortedCopy.sort(function(a, b):Int {
-      return a < b ? -1 : (a > b ? 1 : 0); 
-    });
-    
-    for (i in 0...sortedCopy.length - 1) {
-      if (sortedCopy[i] == sortedCopy[i + 1]) {
-        hasDups = true;
-        if (duplicates != null) duplicates.push(sortedCopy[i]);
-      }
-    }
-    return hasDups;
   }
 }
