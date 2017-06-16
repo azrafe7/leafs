@@ -1,20 +1,22 @@
 package;
 
-import leafs.AutoComplete;
-import leafs.Embedder;
-import leafs.FSTree;
-import haxe.Json;
-import haxe.format.JsonPrinter;
-import haxe.io.Path;
-import sys.FileSystem;
-import sys.io.File;
+//import leafs.AutoComplete;
+//import leafs.Embedder;
+//import leafs.FSTree;
+//import haxe.Json;
+//import haxe.format.JsonPrinter;
+//import haxe.io.Path;
+//import sys.FileSystem;
+//import sys.io.File;
+
+import leafs.EmbeddedResource;
 
 
 class AutoCompleteExample {
 
   static public function main() {
     
-    var root = new FSTree("assets").populate(true); 
+    //var root = new FSTree("assets").populate(true); 
     
     //var x = AutoComplete.fromFS("assets", true, "all", FSFilter.FileOnly);
     //trace(x.join('\n'));
