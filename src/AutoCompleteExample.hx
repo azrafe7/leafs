@@ -30,7 +30,8 @@ class AutoCompleteExample {
     };*/
     
     //trace(Res.one__.asString);
-    trace(Res);
+    trace(Res.all[Res.assets__subdir__subsubdir__deep_file].asString);
+    trace(Res.all[Res.assets__subdir__subsubdir__deep_file].asString);
   }
 }
 
@@ -43,7 +44,8 @@ class AssetIds {
   public static var assets2 = { test: "ASSETS2" };
 }
 
-@:build(leafs.Embedder.createFields(["one\\", "tw.o"], "map"))
+@:build(leafs.AutoComplete.fromFS("assets", true))
+@:build(leafs.Embedder.embedFromFS("assets", true, "all"))
 class Res {
   
 }

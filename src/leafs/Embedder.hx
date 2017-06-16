@@ -4,6 +4,8 @@ import haxe.Resource;
 import haxe.io.Bytes;
 import leafs.FSTree.FSEntry;
 import leafs.FSTree.FSFilter;
+import sys.FileSystem;
+import sys.io.File;
 
 #if macro
 import haxe.macro.ExprTools;
@@ -20,11 +22,12 @@ class Embedder {
   static public var LOG:Bool = true;
   
   #if !macro macro #end
-  static public function createFields(names:Array<String>, ?varName:String):Array<Field> {
-
+  static public function embedFromFS(rootPath:String, recurse:Bool, ?varName:String, ?regexFilter:String, ?regexOptions:String):Array<Field> {
+    var includedPaths:Array<String> = FSTree.getFilteredPaths(rootPath, recurse, FSFilter.FILES_ONLY, regexFilter, regexOptions);
+    
     var headerDoc = "Embedder-generated:";
     
-    var validIds = (varName == null) ? names.map(Utils.toValidHaxeId) : names;
+    var validIds = (varName == null) ? includedPaths.map(Utils.toValidHaxeId) : includedPaths;
     var duplicates = [];
     if (Utils.hasDuplicates(validIds, duplicates)) {
       Context.fatalError("Found colliding id names (" + duplicates + ").", Context.currentPos());
@@ -34,23 +37,27 @@ class Embedder {
       return '<b>' + indent + key + '</b>: <code>"' + value + '"</code> ';
     }
     
-    var resources:Array<EmbeddedResource> = [for (i in validIds) new EmbeddedResource(i)];
+    var resources:Array<EmbeddedResource> = [];
+    for (p in includedPaths) {
+      resources.push(new EmbeddedResource(p));
+      Context.addResource(p, File.getBytes(p));
+    }
     
     var fields = [];
     if (varName == null) { // create static fields
       for (i in 0...validIds.length) {
         fields.push({
           name: validIds[i],
-          doc: '$headerDoc \n' + toDocKeyValue(validIds[i], names[i], ""),
+          doc: '$headerDoc \n' + toDocKeyValue(validIds[i], "EmbeddedResource from '" + includedPaths[i] + "'", ""),
           access: [Access.APublic, Access.AStatic],
-          kind: FieldType.FVar(macro :EmbeddedResource, macro new EmbeddedResource($v{names[i]})),
+          kind: FieldType.FVar(macro :EmbeddedResource, macro new EmbeddedResource($v{includedPaths[i]})),
           pos: Context.currentPos()
         });
       }
     } else { // create Map<String, EmbeddedResource>
       var map:Array<Expr> = [];
-      for (name in names) {
-        map.push(macro $v{name} => null);
+      for (i in 0...includedPaths.length) {
+        map.push(macro $v{includedPaths[i]} => new EmbeddedResource($v{includedPaths[i]}));
       }
       
       var field:Field = {
@@ -65,12 +72,12 @@ class Embedder {
     
     if (LOG) {
       var classPath = Context.getLocalClass().toString();
-      var injectedAs = varName == null ? 'static vars in `$classPath`' : 'anon object in `$classPath.$varName`';
+      var injectedAs = varName == null ? 'static vars in `$classPath`' : 'map in `$classPath.$varName`';
       Sys.println("[Embedder.generate] " + validIds.length + " entries injected (as " + injectedAs + ")");
-      Sys.println([for (i in 0...validIds.length) '  ${validIds[i]}: "${names[i]}"'].join("\n"));
+      Sys.println([for (i in 0...validIds.length) '  ${validIds[i]}: "${includedPaths[i]}"'].join("\n"));
     }
     
-    return fields;
+    return Context.getBuildFields().concat(fields);
   }
 }
 
