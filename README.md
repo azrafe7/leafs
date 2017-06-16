@@ -2,6 +2,9 @@
 
 :herb: A tiny FileTree implementation wrapping the haxe file system API.
 
+(WIP: will include macros for AutoComplete and Resource Embedding. I'm trying to come up with a simple/intuitive API, so expect it to change a lot initially)
+
+
 ## Usage
 
 ```haxe
