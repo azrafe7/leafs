@@ -1,0 +1,59 @@
+TODO:
+
+ - use anon objs for config (streamline build calls/less params/more readable ones)
+ - make example of using custom macro, calling into exisiting ones (toUpperCase/tree obj/etc)
+ - create resources from String (but add them as bytes if specified (base64))
+ - refactor out all shared functionality
+ - generate getter for map of resources (?with regex support)
+ - separate tests for sys/non-sys targets
+ - create an ImportAll.hx (so I can see all tests/examples are at least compiling)
+ - fix logging (and add resource bytesize)
+ - change name of Embedder (?probably as Resources)
+ - factor out a method that checks strings/expr unify with possible enum values
+ - see if resolve is needed
+ - merge genereated structures (when needed)
+ - ?maybe better if all params unify with a typedef (e.g. generate({ids:..., values:..., config:...}))
+ - maybe along with build macros use metadata (which tends to be more readable, and convey what's happening)
+ 
+ - ?maybe generate IDS anon struct in such a way that it retains a tree structure, so you can say something like 
+   `resources.get(IDS.assets.images.panda_png)` instead of something along the line of `resources.get(IDS.assets__images__panda_png)`,
+   this would come with a little performace issue, but it seems REALLY readable (worth it?)
+ 
+ - another option is to make the API REALLY minimal (a couple of macros with a bunch of utils functions), and publish extensive examples on how it can be leveraged
+   (mmhhh... this is not a bad idea, as it would promote macro usage)
+ 
+ 
+DRAFTS:
+
+  typedef Config = {
+    @:optional var asStaticVars:Bool; // true
+    @:optional var asMap:String;      // null
+    @:optional var asAnonObj:String;  // null
+    @:optional var printLog:Bool;     // LOG
+  }
+
+  typedef FilterOptions = {
+    @:optional var fsFilter:FSFilter;   // ANY
+    @:optional var regexFilter:String;  // null
+    @:optional var regexOptions:String; // null
+  }
+  
+  static public function generate(ids:Array<String>, ?values:Array<String>, ?config:config):Array<Field> {
+
+  // ?can it be
+  static public function generate<T>(ids:Array<String>, ?values:Array<ExprOf<T>>, ?config:config):Array<Field> {
+  
+  
+  
+  // some targets can embed resources directly as bytes, while others need to make a Bytes->Base64->Bytes dance
+  Embedder.addHaxeResources(paths:Array<String>, values:Array<String>, ?convertB64ToBytes); // just Context.addResource()
+  Embedder.embedFiles(paths:Array<String>);
+  Embedder.embedFromFS(rootPath:String, recurse:Bool, options) {
+    calls embedFiles
+  }
+  
+  Embedder.embedStrings(ids:Array<String>, values:Array<String>, ?convertB64ToBytes) {
+    calls AutoComple.generate();
+  }
+  
+  Embedder.
