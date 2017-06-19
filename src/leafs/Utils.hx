@@ -8,7 +8,7 @@ class Utils {
   
   
   /** 
-   * Transform `id` into a valid haxe identifier by replacing forbidden characters. 
+   * Transforms `id` into a valid haxe identifier by replacing forbidden characters. 
    * 
    * NOTE: this mainly addresses transforming filenames/paths into valid haxe identifiers
    *       (like haxeFlixel does), but doesn't guarantee to have a valid id back 
@@ -26,7 +26,7 @@ class Utils {
     return res;
   }
   
-  /** Returns true if `array` contains duplicates, and appends them into `duplicates` (if not null). */
+  /** Returns true if `array` contains duplicates, and appends them to `duplicates` (if not null). */
   public static function hasDuplicates(array:Array<String>, ?duplicates:Array<String>):Bool {
     if (array.length <= 1) return false;
     
