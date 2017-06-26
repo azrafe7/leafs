@@ -16,6 +16,7 @@ import Constants.*;
 class TestAll /*implements Buddy <[
     TestMisc, 
     TestValidIds,
+    TestAnonUtils,
   ]>*/ { 
 
   
@@ -28,6 +29,7 @@ class TestAll /*implements Buddy <[
     var runner = new SuitesRunner([
       new TestMisc(), 
       new TestValidIds(),
+      new TestAnonUtils(),
     ], reporter);
     
     runner.run();
@@ -386,6 +388,112 @@ class TestValidIds extends BuddySuite {
         var mapped = [for (e in assets) '"$e" => "${Utils.toValidHaxeId(e)}"'];
         //trace('dups:\n\t  ' + dups.join('\n\t  '));
       });
+    });
+  }
+}
+
+
+class TestAnonUtils extends BuddySuite {
+
+  static public var anonA = {
+    valueA: "must be present",
+    root: {
+      inner: {
+        str: 0,
+        must: "be in output only if deep merge",
+        arr: ["a"]
+      }
+    },
+    fn: 2
+  }
+  
+  static public var anonB = {
+    root: {
+      inner: {
+        str: "NOW it's a str",
+        arr: ["b", "has", "overwritten", "a"]
+      }
+    },
+    fn: function(x) { return x; },
+    valueB: "must be present",
+    nullField: null,
+  }
+  
+  static public var anonC = { 
+    varInC: "c"
+  }
+  
+  
+  public function new() {
+    
+    describe('Set fields with dotPath', {
+      it('Force path creation', {
+        var obj = { };
+        Utils.setAnonField("root", obj, { }, true);
+        Assert.isTrue(obj.root != null);
+      });
+    });
+    
+    describe('Searching fields with dotPath', {
+      it('Existing fields', {
+        var result = Utils.findAnonField("root", anonA);
+        Assert.notNull(result);
+        Assert.same(result.value, anonA.root, true);
+        Assert.isTrue(Type.typeof(result.value) == TObject);
+        
+        result = Utils.findAnonField("root.inner.arr", anonA);
+        Assert.notNull(result);
+        Assert.same(result.value, anonA.root.inner.arr);
+
+        result = Utils.findAnonField("fn", anonB);
+        Assert.notNull(result);
+        Assert.same(result.value, anonB.fn);
+      });
+      
+      it('Existing null field', {
+        var result = Utils.findAnonField("nullField", anonB);
+        Assert.notNull(result);
+        Assert.same(result.value, anonB.nullField);
+        Assert.isTrue(result.value == null);
+      });
+      
+      it('Non existing fields', {
+        var result = Utils.findAnonField("root.deeper", anonA);
+        Assert.isNull(result);
+        
+        result = Utils.findAnonField("fn.inner", anonA);
+        Assert.isNull(result);
+        
+        result = Utils.findAnonField("root.inner.deeper", anonB);
+        Assert.isNull(result);
+      });
+    });
+    
+    describe('Merge anons', {
+      it('Shallow merge', {
+        
+        var expected = {
+          root: {
+            inner: {
+              str: "NOW it's a str",
+              arr: ["b", "has", "overwritten", "a"]
+            }
+          },
+          fn: function(x) { return x; },
+          valueB: "must be present",
+          nullField: null,
+          valueA: "must be present",
+          varInC: "c"
+        };
+        
+        var result = Utils.mergeAnons([anonA, anonB], false);
+        Assert.same(result, expected, true);
+        Assert.isTrue(Utils.findAnonField("root.inner.str", result).value == anonB.root.inner.str);
+        Assert.isTrue(Reflect.hasField(result, "root"));
+        trace(Type.typeof(result));
+        trace(result.root);
+      });
+      
     });
   }
 }
