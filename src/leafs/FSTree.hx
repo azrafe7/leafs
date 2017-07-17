@@ -31,6 +31,12 @@ class FSTree extends FSEntry {
   
   public var children:Array<FSTree> = [];
   
+  /** 
+   * The `path` variable could be relative or absolute, and will be normalized by haxe.Path.normalize().
+   * 
+   * Note that this might throw an exception if for some reasons it couldn't read from disk.
+   * Set the `errorPolicy` beforehand to specify how to handle these cases.
+   */
   public function new(path:String) {
     try {
       super(path);
