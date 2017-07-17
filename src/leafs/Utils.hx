@@ -80,9 +80,9 @@ class Utils {
     }
   }
   
-  static public function setAnonField<T>(path:String, anon:{}, value:T, forceCreate:Bool = false) {
+  static public function setAnonField<T>(dotPath:String, anon:{}, value:T, forceCreate:Bool = false) {
     var currField = anon;
-    var parts = (path).split(".");
+    var parts = (dotPath).split(".");
     var fieldName = parts.pop();
     
     for (part in parts) {
@@ -94,14 +94,14 @@ class Utils {
     Reflect.setField(currField, fieldName, value);
   }  
     
-  static public function mergeTwoAnons(anonA:{}, anonB:{}, deep:Bool = false, into:{} = null, path:String = ""):{ } {
+  static public function mergeTwoAnons(anonA:{}, anonB:{}, deep:Bool = false, into:{} = null, dotPath:String = ""):{ } {
     if (into == null) into = { };
-    if (path != "") path += ".";
+    if (dotPath != "") dotPath += ".";
     
     // add all fields from anonB (if not already there)
     for (fieldName in Reflect.fields(anonB)) {
       var fieldB = Reflect.field(anonB, fieldName);
-      var fieldIntoObj = findAnonField(path + fieldName, into);
+      var fieldIntoObj = findAnonField(dotPath + fieldName, into);
       var alreadyAdded = fieldIntoObj != null && fieldIntoObj.value == fieldB;
       
       if (!alreadyAdded) {
@@ -117,7 +117,7 @@ class Utils {
         var fieldB = Reflect.field(anonB, fieldName);
         // recurse in case of an inner anon field with the same name on both anons
         if (Type.typeof(fieldA) == TObject && Type.typeof(fieldB) == TObject) {
-          mergeTwoAnons(fieldA, fieldB, deep, into, path + fieldName);
+          mergeTwoAnons(fieldA, fieldB, deep, into, dotPath + fieldName);
         }
       } else {
         setAnonField(fieldName, into, Reflect.field(anonA, fieldName));
@@ -163,4 +163,13 @@ class Utils {
 
     return res;
   }  
+  
+  static public function countOccurrencies(str:String, regex:EReg):Int {
+    var count = 0;
+    while (regex.match(str)) {
+      count++;
+      str = regex.matchedRight();
+    }
+    return count;
+  }
 }
