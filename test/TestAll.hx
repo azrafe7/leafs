@@ -4,7 +4,6 @@ import buddy.BuddySuite;
 import buddy.Buddy;
 import buddy.SuitesRunner;
 import haxe.io.Path;
-import leafs.AutoComplete;
 import leafs.Utils;
 import sys.FileSystem;
 import utest.Assert;
@@ -253,7 +252,7 @@ class TestMisc extends BuddySuite {
         root.populate(true);
         
         var ereg = ~/.*empty-dir.*/;
-        var emptyDirs = FSTree.findEntries(ereg, root);
+        var emptyDirs = FSTree.findEntries(root, ereg);
         Assert.isTrue(emptyDirs.length == 2);
       });
       
@@ -262,7 +261,7 @@ class TestMisc extends BuddySuite {
         root.populate(true);
         
         var ereg = ~/.*caps\.txt.*/i;
-        var emptyDirs = FSTree.findEntries(ereg, root);
+        var emptyDirs = FSTree.findEntries(root, ereg);
         Assert.isTrue(emptyDirs.length == 1);
       });
       
@@ -271,11 +270,11 @@ class TestMisc extends BuddySuite {
         root.populate(true);
         
         var ereg = ~/.*caps\.txt.*/;
-        var emptyDirs = FSTree.findEntries(ereg, root);
+        var emptyDirs = FSTree.findEntries(root, ereg);
         Assert.isTrue(emptyDirs.length == 0);
         
         var ereg = ~/.*CAPS\.txt.*/;
-        var emptyDirs = FSTree.findEntries(ereg, root);
+        var emptyDirs = FSTree.findEntries(root, ereg);
         Assert.isTrue(emptyDirs.length == 1);
       });
     });

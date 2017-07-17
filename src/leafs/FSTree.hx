@@ -43,7 +43,7 @@ class FSTree extends FSEntry {
   }
   
   inline public function getEntry(fullName:String):FSTree {
-    return findEntry(fullName, this);
+    return findEntry(this, fullName);
   }
   
   /** See haxe.Json.stringify(). */
@@ -122,10 +122,9 @@ class FSTree extends FSEntry {
     }
   }
   
-  static public function findEntry(fullName:String, parentEntry:FSTree):FSTree {
+  static public function findEntry(parentEntry:FSTree, fullName:String):FSTree {
     var foundEntry:FSTree = null;
     traverseUntil(parentEntry, function(e:FSTree):Bool {
-      //trace(e.fullName);
       if (e.fullName == fullName) {
         foundEntry = e;
         return true;
@@ -135,7 +134,7 @@ class FSTree extends FSEntry {
     return foundEntry;
   }
   
-  static public function findEntries(fullNamePattern:EReg, parentEntry:FSTree):Array<FSTree> {
+  static public function findEntries(parentEntry:FSTree, fullNamePattern:EReg):Array<FSTree> {
     var entries:Array<FSTree> = [];
     traverse(parentEntry, function(e:FSTree):Void {
       if (fullNamePattern.match(e.fullName)) {
@@ -221,9 +220,9 @@ class FSEntry {
   public var isDir(default, null):Bool;
   public var isFile(default, null):Bool;
   public var parent(default, null):String;
-  /** Guaranteed to not end with a slash/backslash. */
+  /** Guaranteed to use `/` as path separatorn and to not end with a slash/backslash. */
   public var name(default, null):String;
-  /** Guaranteed to not end with a slash/backslash. */
+  /** Guaranteed to use `/` as path separatorn and to not end with a slash/backslash. */
   public var fullName(default, null):String;
   
   public function new(path:String) {
