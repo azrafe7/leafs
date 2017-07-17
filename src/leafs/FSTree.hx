@@ -9,7 +9,7 @@ enum FSErrorPolicy {
   QUIET;
   THROW;
   LOG;
-  CUSTOM(handler:/*path:*/String->/*error:*/FSError->/*halt:*/Bool);
+  CUSTOM(handler:/*path:*/String->/*error:*/FSError->/*mustStop:*/Bool);
 }
 
 @:enum abstract FSFilter(String) from String to String {
@@ -46,6 +46,7 @@ class FSTree extends FSEntry {
     return findEntry(fullName, this);
   }
   
+  /** See haxe.Json.stringify(). */
   inline public function toJson(?replacer:Dynamic->Dynamic->Dynamic, space:String = "  "):String {
     return Json.stringify(this, replacer, space);
   }
@@ -58,7 +59,8 @@ class FSTree extends FSEntry {
     }
     else return 0;
   }
-    
+  
+  /** Sorts by dirs first, otherwise leaves elements' position unchanged. */
   public function sort():Void {
     this.children.sort(_cmpDirsFirst);
     
@@ -219,7 +221,9 @@ class FSEntry {
   public var isDir(default, null):Bool;
   public var isFile(default, null):Bool;
   public var parent(default, null):String;
+  /** Guaranteed to not end with a slash/backslash. */
   public var name(default, null):String;
+  /** Guaranteed to not end with a slash/backslash. */
   public var fullName(default, null):String;
   
   public function new(path:String) {
