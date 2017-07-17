@@ -33,8 +33,11 @@ class FSTree extends FSEntry {
     }
   }
 
-  inline public function populate(recurse:Bool = false):FSTree {
-    if (this.isDir) _populate(this, recurse);
+  inline public function populate(recurse:Bool = false, sortByDirsFirst:Bool = true):FSTree {
+    if (this.isDir) {
+      _populate(this, recurse);
+      if (sortByDirsFirst) this.sort();
+    }
     
     return this;
   }
@@ -45,6 +48,38 @@ class FSTree extends FSEntry {
   
   inline public function toJson(?replacer:Dynamic->Dynamic->Dynamic, space:String = "  "):String {
     return Json.stringify(this, replacer, space);
+  }
+  
+  inline function _cmpDirsFirst(a:FSTree, b:FSTree):Int {
+    if (a.isDir || b.isDir) {
+      var aValue = a.isDir ? -1 : 0;
+      var bValue = b.isDir ?  1 : 0;
+      return aValue + bValue;
+    }
+    else return 0;
+  }
+    
+  public function sort():Void {
+    this.children.sort(_cmpDirsFirst);
+    
+    for (c in this.children) {
+      if (c.isDir) c.sort();
+    }
+  }
+  
+  public function toDebugString():String {
+    var buf = new StringBuf();
+    var indent = "  ";
+    var currIndent = "";
+    
+    traverse(this, function(fs):Void {
+      var level = Utils.countOccurrencies(fs.fullName, ~/\//);
+      var str = fs.name;
+      if (fs.isDir) str = "[" + str + "]";
+      for (i in 0...level) str = indent + str;
+      buf.add(str + "\n");
+    });
+    return buf.toString();
   }
   
   public function toFlatArray():Array<FSTree> {
