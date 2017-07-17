@@ -78,9 +78,15 @@ class TestMisc extends BuddySuite {
         Assert.isFalse(root.isFile);
         Assert.isTrue(root.children.length > 0);
         Assert.isTrue(root.name == root.fullName);
-        Assert.isTrue(root.parent == null); // parent is null (as it's a relative path, and this is the root)
-        Assert.isTrue(root.parentPath == "");
+        Assert.isNull(root.parent); // parent is null, as ASSETS_DIR is the root
+        Assert.isTrue(root.parentPath == ""); // parentPath is empty, as no parent can be resolved from the relative `ASSET_PATH` string
         Assert.isTrue(root.fullName.split(SEP).pop() != ""); // doesn't end with '/'
+      });
+      
+      it('Check subdir properties', {
+        var subdir = new FSTree(ASSETS_SUBDIR).populate();
+        Assert.isNull(subdir.parent); // parent is STILL null, as ASSETS_SUBDIR is the root
+        Assert.isTrue(subdir.parentPath != ""); // parentPath is NOT empty, as it can be resolved from the relative `ASSET_PATH` string
       });
       
       it('Contains subdir', function(done) {
@@ -114,9 +120,15 @@ class TestMisc extends BuddySuite {
         Assert.isFalse(root.isFile);
         Assert.isTrue(root.children.length > 0);
         Assert.isTrue(root.name == root.fullName);
-        Assert.isTrue(root.parent == null);
-        Assert.isTrue(root.parentPath == "");
+        Assert.isNull(root.parent); // parent is null, as ASSETS_DIR is the root
+        Assert.isTrue(root.parentPath == ""); // parentPath is empty, as no parent can be resolved from the relative `ASSET_PATH` string
         Assert.isTrue(root.fullName.split(SEP).pop() != ""); // doesn't end with '/'
+      });
+      
+      it('Check subdir properties', {
+        var subdir = new FSTree(ASSETS_SUBDIR).populate();
+        Assert.isNull(subdir.parent); // parent is STILL null, as ASSETS_SUBDIR is the root
+        Assert.isTrue(subdir.parentPath != ""); // parentPath is NOT empty, as it can be resolved from the relative `ASSET_PATH` string
       });
       
       it('Contains two empty dirs', {
@@ -293,7 +305,7 @@ class TestMisc extends BuddySuite {
         Assert.isTrue(emptyDirs.length == 2);
       });
       
-      it('Ignore case', {
+      it('Ignore string case', {
         var root = new FSTree(ASSETS_DIR);
         root.populate(true);
         
@@ -302,7 +314,7 @@ class TestMisc extends BuddySuite {
         Assert.isTrue(emptyDirs.length == 1);
       });
       
-      it('Respect case', {
+      it('Respect string case', {
         var root = new FSTree(ASSETS_DIR);
         root.populate(true);
         
@@ -381,7 +393,7 @@ class TestValidIds extends BuddySuite {
   
   public function new() {
     
-    describe('Check transform to valid ids', {
+    describe('Transform to valid ids', {
       it('From assets', function (done) {
         var root = new FSTree(ASSETS_DIR).populate(true);
         var entries = root.toStringArray();
@@ -470,7 +482,7 @@ class TestAnonUtils extends BuddySuite {
       });
     });
     
-    describe('Searching fields with dotPath', {
+    describe('Search fields with dotPath', {
       it('Existing fields', {
         var result = Utils.findAnonField(anonA, "root");
         Assert.notNull(result);
