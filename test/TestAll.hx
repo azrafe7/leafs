@@ -79,14 +79,14 @@ class TestMisc extends BuddySuite {
         Assert.isTrue(root.children.length > 0);
         Assert.isTrue(root.name == root.fullName);
         Assert.isNull(root.parent); // parent is null, as ASSETS_DIR is the root
-        Assert.isTrue(root.parentPath == ""); // parentPath is empty, as no parent can be resolved from the relative `ASSET_PATH` string
+        Assert.isTrue(root.parentPath == ""); // parentPath is empty, as no parent can be resolved from the relative `ASSET_DIR` string
         Assert.isTrue(root.fullName.split(SEP).pop() != ""); // doesn't end with '/'
       });
       
       it('Check subdir properties', {
         var subdir = new FSTree(ASSETS_SUBDIR).populate();
         Assert.isNull(subdir.parent); // parent is STILL null, as ASSETS_SUBDIR is the root
-        Assert.isTrue(subdir.parentPath != ""); // parentPath is NOT empty, as it can be resolved from the relative `ASSET_PATH` string
+        Assert.isTrue(subdir.parentPath != ""); // parentPath is NOT empty, as it can be resolved from the relative `ASSET_SUBDIR` string
       });
       
       it('Contains subdir', function(done) {
@@ -121,14 +121,14 @@ class TestMisc extends BuddySuite {
         Assert.isTrue(root.children.length > 0);
         Assert.isTrue(root.name == root.fullName);
         Assert.isNull(root.parent); // parent is null, as ASSETS_DIR is the root
-        Assert.isTrue(root.parentPath == ""); // parentPath is empty, as no parent can be resolved from the relative `ASSET_PATH` string
+        Assert.isTrue(root.parentPath == ""); // parentPath is empty, as no parent can be resolved from the relative `ASSET_DIR` string
         Assert.isTrue(root.fullName.split(SEP).pop() != ""); // doesn't end with '/'
       });
       
       it('Check subdir properties', {
         var subdir = new FSTree(ASSETS_SUBDIR).populate();
         Assert.isNull(subdir.parent); // parent is STILL null, as ASSETS_SUBDIR is the root
-        Assert.isTrue(subdir.parentPath != ""); // parentPath is NOT empty, as it can be resolved from the relative `ASSET_PATH` string
+        Assert.isTrue(subdir.parentPath != ""); // parentPath is NOT empty, as it can be resolved from the relative `ASSET_SUBDIR` string
       });
       
       it('Contains two empty dirs', {
