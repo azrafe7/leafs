@@ -18,6 +18,12 @@ enum FSErrorPolicy {
   var FILES_ONLY = "FILES_ONLY";
 }
 
+typedef FilterOptions = {
+  @:optional var fsFilter:FSFilter;
+  @:optional var regexFilter:String;
+  @:optional var regexOptions:String;
+}
+
 
 class FSTree extends FSEntry {
   
@@ -144,19 +150,23 @@ class FSTree extends FSEntry {
     return entries;
   }
 
-  static public function getFilteredEntries(rootPath:String, recurse:Bool, ?fsFilter:FSFilter, ?regexFilter:String, ?regexOptions:String):Array<FSTree> {
+  static public function getFilteredEntries(rootPath:String, recurse:Bool, ?filterOptions:FilterOptions):Array<FSTree> {
     var entries = new FSTree(rootPath).populate(recurse).toFlatArray();
     
-    if (fsFilter == null) fsFilter = FSFilter.ANY;
-    if (regexOptions == null) regexOptions = "";
-    if (regexFilter == null) regexFilter = ".*";
+    if (filterOptions == null) filterOptions = { };
+    var filterDefaults:FilterOptions = {
+      fsFilter: FSFilter.ANY,
+      regexFilter: "",
+      regexOptions: ""
+    };
+    Utils.mergeAnons([filterDefaults, filterOptions], false, filterOptions);
     
-    var regex = new EReg(regexFilter, regexOptions);
+    var regex = new EReg(filterOptions.regexFilter, filterOptions.regexOptions);
 
     function include(entry:FSTree):Bool {
       var satisfiesRegex = regex.match(entry.fullName);
       if (!satisfiesRegex) return false;
-      return switch (fsFilter) {
+      return switch (filterOptions.fsFilter) {
         case FSFilter.ANY:
           return satisfiesRegex;
         case FSFilter.DIRS_ONLY:
@@ -164,7 +174,7 @@ class FSTree extends FSEntry {
         case FSFilter.FILES_ONLY:
           return satisfiesRegex && entry.isFile;
         default:
-          var errorMessage = 'Invalid `fsFilter` parameter ("$fsFilter"). Must be compatible with FSFilter enum.';
+          var errorMessage = 'Invalid `fsFilter` parameter ("${filterOptions.fsFilter}"). Must be compatible with FSFilter enum.';
         #if macro
           haxe.macro.Context.fatalError(errorMessage, haxe.macro.Context.currentPos());
         #else
@@ -178,8 +188,8 @@ class FSTree extends FSEntry {
     return includedEntries;
   }
   
-  static public function getFilteredPaths(rootPath:String, recurse:Bool, ?fsFilter:FSFilter, ?regexFilter:String, ?regexOptions:String):Array<String> {
-    var includedEntries:Array<FSTree> = getFilteredEntries(rootPath, recurse, fsFilter, regexFilter, regexOptions);
+  static public function getFilteredPaths(rootPath:String, recurse:Bool, ?filterOptions:FilterOptions):Array<String> {
+    var includedEntries:Array<FSTree> = getFilteredEntries(rootPath, recurse, filterOptions);
     var includedPaths:Array<String> = [for (e in includedEntries) e.fullName];
     
     return includedPaths;
