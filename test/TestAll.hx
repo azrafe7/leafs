@@ -212,6 +212,41 @@ class TestMisc extends BuddySuite {
       });
     });
 
+    // no entry ends with '/'
+    describe('No trailing backslashes (dir)', {
+      var root = new FSTree(ASSETS_DIR);
+      root.populate(true);
+      
+      it('traverse()', {
+        FSTree.traverse(root, function (e:FSTree) {
+          var lastPart = e.fullName.split(SEP).pop();
+          Assert.isTrue(lastPart != "");
+        });
+      });
+      
+      it('to*Array()', {
+        var paths = root.toStringArray();
+        var entries = root.toFlatArray();
+        
+        for (i in 0...paths.length) {
+          var path = paths[i];
+          var entry = entries[i];
+          Assert.isTrue(path == entry.fullName);
+          Assert.isTrue(path.lastIndexOf(SEP) < path.length - 1);
+          Assert.isTrue(entry.fullName.lastIndexOf(SEP) < entry.fullName.length - 1);
+          Assert.isTrue(entry.name.lastIndexOf(SEP) < entry.name.length - 1);
+          
+          if (entry == root) {
+            Assert.isTrue(entry.parentPath == "");
+            Assert.isNull(entry.parent);
+          } else {
+            Assert.isTrue(entry.parentPath.lastIndexOf(SEP) < entry.parentPath.length - 1);
+            Assert.notNull(entry.parent);
+          }
+        }
+      });
+    });
+
     describe('Search single entries', {
       it('File', {
         var root = new FSTree(ASSETS_DIR);
