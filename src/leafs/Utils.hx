@@ -13,6 +13,8 @@ class Utils {
    * NOTE: this mainly addresses transforming filenames/paths into valid haxe identifiers
    *       (like haxeFlixel does), but doesn't guarantee to have a valid id back 
    *       (f.e. doesn't take into account reserved words).
+   * 
+   * For example transforms something like "assets/sub.dir/image.png" into "assets__sub_dir__image_png".
    */ 
   static public function toValidHaxeId(id:String):String {
     var startingDigitRegex:EReg = ~/^[0-9]/g;
@@ -26,8 +28,16 @@ class Utils {
     return res;
   }
   
-  /** Returns true if `array` contains duplicates, and appends them to `duplicates` (if not null). */
-  static public function hasDuplicates(array:Array<String>, ?duplicates:Array<String>):Bool {
+  /** Transforms something like "assets/sub.dir/image.png" into "assets.sub_dir.image_png". */
+  inline static public function toValidDotPath(filePath:String):String {
+    return filePath.split("/").map(Utils.toValidHaxeId).join(".");
+  }
+  
+  /** 
+   * Returns true if `array` contains duplicates.
+   * If `duplicate` is specified they will be appended to it. 
+   */
+  static public function hasDuplicates<T>(array:Array<String>, ?duplicates:Array<String>):Bool {
     if (array.length <= 1) return false;
     
     var hasDups = false;
@@ -45,44 +55,20 @@ class Utils {
     return hasDups;
   }
   
-//https://try.haxe.org/#1e17F
   /** 
-   * Adds a `field` with `value` to `anon` using reflection. 
-   * 
-   * NOTE: tries to create a path to `field` if it doesn't exist:
+   * Sets the field indentified by `dotPath` on `anon` to `value`.
+   * If `forceCreate` is true, it will create all the fields needed to reach `dotPath`.
    * 
    * ```
-   *   var anon = {assets: "assets/"};
-   *   addAnonField(anon, "assets.one", 1); // error, as assets was already defined and not an anon
-   *   addAnonField(anon, "inner.value", "deep"); // ok, {assets: 1, inner: {value: "deep"}}
+   *   var anon = {assets: "path/to/res/"};
+   *   setAnonField(anon, "assets.one", 1); // error, the `assets` field was already defined and not an anon
+   *   setAnonField(anon, "inner.value", "deep"); // error, the `inner` field doesn't exist
+   *   setAnonField(anon, "inner.value", "deep", true); // ok, {assets: 1, inner: {value: "deep"}}, the `inner` field will be created
    * ```
    */
-  static public function addAnonField<T>(anon:Dynamic, field:String, value:T) {
-    try {
-      var parts = field.split(".");
-      var curr = anon;
-      var len = parts.length;
-      for (i in 0...len) {
-        var part = parts[i];
-        if (Reflect.hasField(curr, part)) {
-          var currField = Reflect.field(curr, part);
-          if (Std.is(currField, { })) {
-            trace("anon");
-          } else {
-            trace("different!");
-          }
-        } else {
-          trace("no field");
-        }
-      }
-    } catch (e:Dynamic) {
-      throw "Error: " + e;
-    }
-  }
-  
-  static public function setAnonField<T>(dotPath:String, anon:{}, value:T, forceCreate:Bool = false) {
+  static public function setAnonField<T>(anon:{}, dotPath:String, value:T, forceCreate:Bool = false) {
     var currField = anon;
-    var parts = (dotPath).split(".");
+    var parts = dotPath.split(".");
     var fieldName = parts.pop();
     
     for (part in parts) {
@@ -94,18 +80,22 @@ class Utils {
     Reflect.setField(currField, fieldName, value);
   }  
     
-  static public function mergeTwoAnons(anonA:{}, anonB:{}, deep:Bool = false, into:{} = null, dotPath:String = ""):{ } {
+  /**
+   * Same as `mergeAnons`, but only for two anons.
+   * The optional `atDotPath` identifies where into the resulting object the fields will be merged.
+   */
+  static public function mergeTwoAnons(anonA:{}, anonB:{}, deep:Bool = false, into:{} = null, atDotPath:String = ""):{ } {
     if (into == null) into = { };
-    if (dotPath != "") dotPath += ".";
+    if (atDotPath != "") atDotPath += ".";
     
     // add all fields from anonB (if not already there)
     for (fieldName in Reflect.fields(anonB)) {
       var fieldB = Reflect.field(anonB, fieldName);
-      var fieldIntoObj = findAnonField(dotPath + fieldName, into);
+      var fieldIntoObj = findAnonField(atDotPath + fieldName, into);
       var alreadyAdded = fieldIntoObj != null && fieldIntoObj.value == fieldB;
       
       if (!alreadyAdded) {
-        setAnonField(fieldName, into, fieldB);
+        setAnonField(into, fieldName, fieldB);
       }
     }
     
@@ -117,16 +107,22 @@ class Utils {
         var fieldB = Reflect.field(anonB, fieldName);
         // recurse in case of an inner anon field with the same name on both anons
         if (Type.typeof(fieldA) == TObject && Type.typeof(fieldB) == TObject) {
-          mergeTwoAnons(fieldA, fieldB, deep, into, dotPath + fieldName);
+          mergeTwoAnons(fieldA, fieldB, deep, into, atDotPath + fieldName);
         }
       } else {
-        setAnonField(fieldName, into, Reflect.field(anonA, fieldName));
+        setAnonField(into, fieldName, Reflect.field(anonA, fieldName));
       }
     }
     
     return into;
   }
-  
+
+  /** 
+   * Merges an array of anons (similar to jquery's extend(): fields in anons later in the array will win).
+   * 
+   * If `deep` is true a deep/recursive merge will be performed.
+   * The resulting anon will be placed into `into` if specified.
+   */
   static public function mergeAnons(anons:Array<{}>, deep:Bool = false, into:{} = null): { } {
     
     if (into == null) into = { };
@@ -139,6 +135,11 @@ class Utils {
     return into;
   }
   
+  /** 
+   * Searches for a field identified by `dotPath` in `object`. Returns null if it can't find it.
+   * 
+   * Note: remember to unwrap the value in case of a successful search.
+   */
   static public function findAnonField(dotPath:String, object:{}):Null<{value:Dynamic}> {
     var parts = dotPath.split(".");
     var first = parts.shift();
@@ -164,6 +165,7 @@ class Utils {
     return res;
   }  
   
+  /** Applies `regex` to `str` and returns the number of matches. */
   static public function countOccurrencies(str:String, regex:EReg):Int {
     var count = 0;
     while (regex.match(str)) {

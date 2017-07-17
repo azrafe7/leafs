@@ -428,7 +428,7 @@ class TestAnonUtils extends BuddySuite {
     describe('Set fields with dotPath', {
       it('Force path creation', {
         var obj = { };
-        Utils.setAnonField("root", obj, { }, true);
+        Utils.setAnonField(obj, "root", { }, true);
         Assert.isTrue(Reflect.field(obj, "root") != null);
       });
     });
