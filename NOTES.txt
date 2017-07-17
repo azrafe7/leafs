@@ -22,6 +22,14 @@ TODO:
  - another option is to make the API REALLY minimal (a couple of macros with a bunch of utils functions), and publish extensive examples on how it can be leveraged
    (mmhhh... this is not a bad idea, as it would promote macro usage)
  
+   - refactor to use typedefs instead of multiple args when functions' args exceed four/five (readability)
+   
+   - add optional metadata to EmbeddedResource (so we can save size in case of an image, or add other meaningful info)
+   
+   - maybe add more macro functions (like makeMap, makeAnon, etc.)
+   
+   - experiment with doc-comments in `haxe.macro.Field.doc` (and see if FD/HD/VSCode support markdown there)
+ 
  
 DRAFTS:
 
