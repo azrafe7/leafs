@@ -78,9 +78,9 @@ class TestMisc extends BuddySuite {
         Assert.isFalse(root.isFile);
         Assert.isTrue(root.children.length > 0);
         Assert.isTrue(root.name == root.fullName);
-        Assert.isTrue(root.parent == "");
+        Assert.isTrue(root.parent == null); // parent is null (as it's a relative path, and this is the root)
+        Assert.isTrue(root.parentPath == "");
         Assert.isTrue(root.fullName.split(SEP).pop() != ""); // doesn't end with '/'
-        Assert.isTrue(root.parent == ""); // parent is empty (as it's a relative path)
       });
       
       it('Contains subdir', function(done) {
@@ -114,7 +114,8 @@ class TestMisc extends BuddySuite {
         Assert.isFalse(root.isFile);
         Assert.isTrue(root.children.length > 0);
         Assert.isTrue(root.name == root.fullName);
-        Assert.isTrue(root.parent == "");
+        Assert.isTrue(root.parent == null);
+        Assert.isTrue(root.parentPath == "");
         Assert.isTrue(root.fullName.split(SEP).pop() != ""); // doesn't end with '/'
       });
       
@@ -183,7 +184,7 @@ class TestMisc extends BuddySuite {
     });
     
     // no entry ends with '/'
-    describe('No trailing backslashes', {
+    describe('No trailing backslashes (single file)', {
       var root = new FSTree(ASSETS_FILE);
       root.populate(true);
       
@@ -205,7 +206,8 @@ class TestMisc extends BuddySuite {
           Assert.isTrue(path.lastIndexOf(SEP) < path.length - 1);
           Assert.isTrue(entry.fullName.lastIndexOf(SEP) < entry.fullName.length - 1);
           Assert.isTrue(entry.name.lastIndexOf(SEP) < entry.name.length - 1);
-          Assert.isTrue(entry.parent.lastIndexOf(SEP) < entry.parent.length - 1);
+          Assert.isTrue(entry.parentPath.lastIndexOf(SEP) < entry.parentPath.length - 1);
+          Assert.isNull(entry.parent);
         }
       });
     });

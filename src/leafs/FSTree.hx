@@ -29,6 +29,7 @@ class FSTree extends FSEntry {
   
   static public var errorPolicy:FSErrorPolicy = FSErrorPolicy.LOG;
   
+  public var parent(default, null):FSTree = null;
   public var children:Array<FSTree> = [];
   
   /** 
@@ -204,7 +205,9 @@ class FSTree extends FSEntry {
   function _populate(parentEntry:FSTree, recurse:Bool):Void {
     var entries = FileSystem.readDirectory(parentEntry.fullName);
     parentEntry.children = entries.map(function (e) { 
-      return new FSTree(Path.join([parentEntry.fullName, e]));
+      var tree = new FSTree(Path.join([parentEntry.fullName, e]));
+      tree.parent = parentEntry;
+      return tree;
     });
     
     for (e in parentEntry.children) {
@@ -235,7 +238,8 @@ class FSEntry {
   
   public var isDir(default, null):Bool;
   public var isFile(default, null):Bool;
-  public var parent(default, null):String;
+  /** Guaranteed to use `/` as path separatorn and to not end with a slash/backslash. */
+  public var parentPath(default, null):String;
   /** Guaranteed to use `/` as path separatorn and to not end with a slash/backslash. */
   public var name(default, null):String;
   /** Guaranteed to use `/` as path separatorn and to not end with a slash/backslash. */
@@ -243,9 +247,9 @@ class FSEntry {
   
   public function new(path:String) {
     path = Path.normalize(path);
-    parent = Path.directory(path);
     name = Path.withoutDirectory(path);
-    fullName = Path.join([parent, name]);
+    parentPath = Path.directory(path);
+    fullName = Path.join([parentPath, name]);
     isDir = FileSystem.isDirectory(fullName);
     isFile = !isDir;
   }
