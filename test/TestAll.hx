@@ -435,35 +435,35 @@ class TestAnonUtils extends BuddySuite {
     
     describe('Searching fields with dotPath', {
       it('Existing fields', {
-        var result = Utils.findAnonField("root", anonA);
+        var result = Utils.findAnonField(anonA, "root");
         Assert.notNull(result);
         Assert.same(result.value, anonA.root, true);
         Assert.isTrue(Type.typeof(result.value) == TObject);
         
-        result = Utils.findAnonField("root.inner.arr", anonA);
+        result = Utils.findAnonField(anonA, "root.inner.arr");
         Assert.notNull(result);
         Assert.same(result.value, anonA.root.inner.arr);
 
-        result = Utils.findAnonField("fn", anonB);
+        result = Utils.findAnonField(anonB, "fn");
         Assert.notNull(result);
         Assert.same(result.value, anonB.fn);
       });
       
       it('Existing null field', {
-        var result = Utils.findAnonField("nullField", anonB);
+        var result = Utils.findAnonField(anonB, "nullField");
         Assert.notNull(result);
         Assert.same(result.value, anonB.nullField);
         Assert.isTrue(result.value == null);
       });
       
       it('Non existing fields', {
-        var result = Utils.findAnonField("root.deeper", anonA);
+        var result = Utils.findAnonField(anonA, "root.deeper");
         Assert.isNull(result);
         
-        result = Utils.findAnonField("fn.inner", anonA);
+        result = Utils.findAnonField(anonA, "fn.inner");
         Assert.isNull(result);
         
-        result = Utils.findAnonField("root.inner.deeper", anonB);
+        result = Utils.findAnonField(anonB, "root.inner.deeper");
         Assert.isNull(result);
       });
     });
@@ -486,7 +486,7 @@ class TestAnonUtils extends BuddySuite {
         
         var result = Utils.mergeAnons([anonA, anonB], false);
         Assert.same(result, expected, true);
-        Assert.isTrue(Utils.findAnonField("root.inner.str", result).value == anonB.root.inner.str);
+        Assert.isTrue(Utils.findAnonField(result, "root.inner.str").value == anonB.root.inner.str);
         Assert.isTrue(Reflect.hasField(result, "root"));
       });
       

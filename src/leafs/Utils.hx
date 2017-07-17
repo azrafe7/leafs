@@ -82,16 +82,17 @@ class Utils {
     
   /**
    * Same as `mergeAnons`, but only for two anons.
-   * The optional `atDotPath` identifies where into the resulting object the fields will be merged.
+   * 
+   * The optional `rootDotPath` identifies the root of where to start the merge.
    */
-  static public function mergeTwoAnons(anonA:{}, anonB:{}, deep:Bool = false, into:{} = null, atDotPath:String = ""):{ } {
+  static public function mergeTwoAnons(anonA:{}, anonB:{}, deep:Bool = false, into:{} = null, rootDotPath:String = ""):{ } {
     if (into == null) into = { };
-    if (atDotPath != "") atDotPath += ".";
+    if (rootDotPath != "") rootDotPath += ".";
     
     // add all fields from anonB (if not already there)
     for (fieldName in Reflect.fields(anonB)) {
       var fieldB = Reflect.field(anonB, fieldName);
-      var fieldIntoObj = findAnonField(atDotPath + fieldName, into);
+      var fieldIntoObj = findAnonField(into, rootDotPath + fieldName);
       var alreadyAdded = fieldIntoObj != null && fieldIntoObj.value == fieldB;
       
       if (!alreadyAdded) {
@@ -107,7 +108,7 @@ class Utils {
         var fieldB = Reflect.field(anonB, fieldName);
         // recurse in case of an inner anon field with the same name on both anons
         if (Type.typeof(fieldA) == TObject && Type.typeof(fieldB) == TObject) {
-          mergeTwoAnons(fieldA, fieldB, deep, into, atDotPath + fieldName);
+          mergeTwoAnons(fieldA, fieldB, deep, into, rootDotPath + fieldName);
         }
       } else {
         setAnonField(into, fieldName, Reflect.field(anonA, fieldName));
@@ -136,27 +137,27 @@ class Utils {
   }
   
   /** 
-   * Searches for a field identified by `dotPath` in `object`. Returns null if it can't find it.
+   * Searches for a field identified by `dotPath` in `anon`. Returns null if it can't find it.
    * 
    * Note: remember to unwrap the value in case of a successful search.
    */
-  static public function findAnonField(dotPath:String, object:{}):Null<{value:Dynamic}> {
+  static public function findAnonField(anon:{}, dotPath:String):Null<{value:Dynamic}> {
     var parts = dotPath.split(".");
     var first = parts.shift();
     var res = null;
 
-    if (Type.typeof(object) != TObject) return null;
+    if (Type.typeof(anon) != TObject) return null;
 
-    var fields = Reflect.fields(object);
+    var fields = Reflect.fields(anon);
     for (fName in fields) {
-      var value = Reflect.field(object, fName);
+      var value = Reflect.field(anon, fName);
       if (fName == first) {
         if (parts.length == 0) {
           res = {value:value};
           break;
         } else {
           if (Type.typeof(value) == TObject) {
-            return findAnonField(parts.join("."), value);
+            return findAnonField(value, parts.join("."));
           }
         }
       }
