@@ -430,7 +430,7 @@ class TestAnonUtils extends BuddySuite {
       it('Force path creation', {
         var obj = { };
         Utils.setAnonField("root", obj, { }, true);
-        Assert.isTrue(obj.root != null);
+        Assert.isTrue(Reflect.field(obj, "root") != null);
       });
     });
     
@@ -483,15 +483,12 @@ class TestAnonUtils extends BuddySuite {
           valueB: "must be present",
           nullField: null,
           valueA: "must be present",
-          varInC: "c"
         };
         
         var result = Utils.mergeAnons([anonA, anonB], false);
         Assert.same(result, expected, true);
         Assert.isTrue(Utils.findAnonField("root.inner.str", result).value == anonB.root.inner.str);
         Assert.isTrue(Reflect.hasField(result, "root"));
-        trace(Type.typeof(result));
-        trace(result.root);
       });
       
     });
