@@ -87,7 +87,7 @@ class FSTree extends FSEntry {
     var currIndent = "";
     
     traverse(this, function(fs):Void {
-      var level = Utils.countOccurrencies(fs.fullName, ~/\//);
+      var level = Utils.countMatches(fs.fullName, ~/\//);
       var str = fs.name;
       if (fs.isDir) str = "[" + str + "]";
       for (i in 0...level) str = indent + str;

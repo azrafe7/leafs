@@ -166,8 +166,8 @@ class Utils {
     return res;
   }  
   
-  /** Applies `regex` to `str` and returns the number of matches. */
-  static public function countOccurrencies(str:String, regex:EReg):Int {
+  /** Applies `regex` to `str` _repeatedly_ and returns the number of matches. */
+  static public function countMatches(str:String, regex:EReg):Int {
     var count = 0;
     while (regex.match(str)) {
       count++;
