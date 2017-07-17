@@ -1,12 +1,11 @@
 package leafs;
 
 import haxe.PosInfos;
-import leafs.FSTree.FSEntry;
-import leafs.FSTree.FSFilter;
 import leafs.Utils;
 
 #if macro
 import haxe.macro.ExprTools;
+import haxe.macro.TypeTools;
 import haxe.macro.Printer;
 import haxe.macro.Context;
 import haxe.macro.Expr;
@@ -16,10 +15,11 @@ import haxe.macro.Expr;
 class Macros {
   
   #if !macro macro #end
-  static public function makeVarField<T>(name:String, value:T):Field {
+  static public function makeVarField<T>(name:String, value:T, asMonomorph:Bool = false):Field {
+    var type = asMonomorph ? null : TypeTools.toComplexType(Context.typeof(macro $v{value}));
     var field:Field = {
       name: name,
-      kind: FieldType.FVar(null, macro $v{value}),
+      kind: FieldType.FVar(type, macro $v{value}),
       pos: Context.currentPos()
     }
     
