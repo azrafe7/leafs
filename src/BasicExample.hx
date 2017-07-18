@@ -15,41 +15,43 @@ class BasicExample {
     // set custom policy for error handling
     FSTree.errorPolicy = FSErrorPolicy.CUSTOM(customErrorHandler);
     
-    var root = new FSTree("assets"); 
+    var root = new FSTree("assets/subdir"); 
     
-    trace("Root entry:");
-    Sys.println(root);
-    Sys.print("\n");
+    trace("root entry: " + root);
+    // root entry: { isDir => true, name => subdir, parentId => -1, fullName => assets/subdir, isFile => false, parentPath => assets, children => [] }
     
-    trace("FullName: " + new Path(root.fullName));
-    Sys.print("\n");
+    trace("fullName: " + root.fullName); // fullName: assets/subdir
+    trace("name: " + root.name); // name: subdir
+    trace("absolute path: " + sys.FileSystem.fullPath(root.fullName)); // absolute path: d:\Dev\Haxe\leafs_git\assets\subdir
     
-    root.populate(true); // passing false will do a shallow scan
+    // populate structure by reading entries from disk
+    root.populate(true); // passing false (default) will do a shallow scan instead of a deep one
+    trace("immediate children: " + root.children.length); // 3
     
+    // convert to pretty Json string
     var prettyJson = root.toJson();
-    trace("toJson:");
-    Sys.println(prettyJson);
-    Sys.print("\n");
     
-    trace("toFlatArray:");
-    Sys.println(root.toFlatArray().join('\n'));
-    Sys.print("\n");
+    // flatten the tree structure into an array of FSTree
+    var flatArray = root.toFlatArray();
+    trace("all children: " + (flatArray.length - 1)); // 4
     
-    trace("toStringArray:");
-    Sys.println(root.toPathArray().join('\n'));
-    Sys.print("\n");
+    // flatten the tree structure into an array of path strings
+    var pathArray = root.toPathArray();
     
-    trace("Using iterator:");
+    // iterate the tree
+    var repr = "";
     for (e in root) {
-      if (e.isDir) Sys.println("[" + e.name + "]");
-      else Sys.println(e.name);
+      if (e.isDir) repr += "\n[" + e.name + "]";
+      else repr += "\n" + e.name;
     }
-    Sys.print("\n");
+    trace(repr);
     
+    trace("\n" + root.toDebugString());
+    
+    // search for entries using a regex
     var deepFile = FSTree.findEntries(root, ~/.*deep.file.*/i)[0];
-    trace('Contents of "${deepFile.fullName}":');
-    Sys.println(File.getContent(deepFile.fullName));
-    Sys.print("\n");
+    trace('contents of "${deepFile.fullName}":');
+    trace(File.getContent(deepFile.fullName));
   }
   
   static public function customErrorHandler(path:String, error:Dynamic):Bool {

@@ -8,33 +8,43 @@
 ## Usage
 
 ```haxe
-    var root = new FSTree("assets"); 
+    var root = new FSTree("assets/subdir"); 
     
     trace("root entry: " + root);
-    // Root entry: { isDir => true, name => assets, parentId => -1, fullName => assets, isFile => false, parentPath => , children => [] }
+    // root entry: { isDir => true, name => subdir, parentId => -1, fullName => assets/subdir, isFile => false, parentPath => assets, children => [] }
     
-    trace("fullName: " + new Path(root.fullName)); // fullName: assets
-    trace("absolute path: " + sys.FileSystem.fullPath(root.fullName)); // absolute path: d:\Dev\Haxe\leafs_git\assets
+    trace("fullName: " + root.fullName); // fullName: assets/subdir
+    trace("name: " + root.name); // name: subdir
+    trace("absolute path: " + sys.FileSystem.fullPath(root.fullName)); // absolute path: d:\Dev\Haxe\leafs_git\assets\subdir
     
     // populate structure by reading entries from disk
-    root.populate(true); // passing false will do a shallow scan instead of a deep one
-    trace("immediate children: " + root.children.length); // 5
+    root.populate(true); // passing false (default) will do a shallow scan instead of a deep one
+    trace("immediate children: " + root.children.length); // 3
     
     // convert to pretty Json string
     var prettyJson = root.toJson();
     
     // flatten the tree structure into an array of FSTree
     var flatArray = root.toFlatArray();
-    trace("all children: " + flatArray.length - 1); // 12
+    trace("all children: " + (flatArray.length - 1)); // 4
     
     // flatten the tree structure into an array of path strings
     var pathArray = root.toPathArray();
     
     // iterate the tree
+    var repr = "";
     for (e in root) {
-      if (e.isDir) trace("[" + e.name + "]");
-      else trace(e.name);
+      if (e.isDir) repr += "\n[" + e.name + "]";
+      else repr += "\n" + e.name;
     }
+    trace(repr);
+    
+    trace("\n" + root.toDebugString());
+    //[subdir]
+    //  [empty-dir]
+    //  [subsubdir]
+    //    deep.file
+    //  subfile.zip
     
     // search for entries using a regex
     var deepFile = FSTree.findEntries(root, ~/.*deep.file.*/i)[0];
