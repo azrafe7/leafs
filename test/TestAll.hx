@@ -85,7 +85,7 @@ class TestMisc extends BuddySuite {
       
       it('Check subdir properties', {
         var subdir = new FSTree(ASSETS_SUBDIR).populate();
-        Assert.isNull(subdir.parent); // parent is STILL null, as ASSETS_SUBDIR is the root
+        Assert.isNull(subdir.parent); // parent is STILL null, as `ASSET_SUBDIR` is the root
         Assert.isTrue(subdir.parentPath != ""); // parentPath is NOT empty, as it can be resolved from the relative `ASSET_SUBDIR` string
       });
       
@@ -126,8 +126,8 @@ class TestMisc extends BuddySuite {
       });
       
       it('Check subdir properties', {
-        var subdir = new FSTree(ASSETS_SUBDIR).populate();
-        Assert.isNull(subdir.parent); // parent is STILL null, as ASSETS_SUBDIR is the root
+        var subdir = root.getEntry(ASSETS_SUBDIR); // get entry from already populated root FSTree
+        Assert.notNull(subdir.parent); // parent is NOT null, as ASSETS_SUBDIR is deeper in the root FSTree
         Assert.isTrue(subdir.parentPath != ""); // parentPath is NOT empty, as it can be resolved from the relative `ASSET_SUBDIR` string
       });
       
