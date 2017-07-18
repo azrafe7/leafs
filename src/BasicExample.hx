@@ -8,7 +8,7 @@ import sys.FileSystem;
 import sys.io.File;
 
 
-class Example {
+class BasicExample {
   
   static public function main() {
     
@@ -36,7 +36,7 @@ class Example {
     Sys.print("\n");
     
     trace("toStringArray:");
-    Sys.println(root.toStringArray().join('\n'));
+    Sys.println(root.toPathArray().join('\n'));
     Sys.print("\n");
     
     trace("Using iterator:");
@@ -46,7 +46,7 @@ class Example {
     }
     Sys.print("\n");
     
-    var deepFile = FSTree.findEntries(~/.*deep.file.*/i, root)[0];
+    var deepFile = FSTree.findEntries(root, ~/.*deep.file.*/i)[0];
     trace('Contents of "${deepFile.fullName}":');
     Sys.println(File.getContent(deepFile.fullName));
     Sys.print("\n");
