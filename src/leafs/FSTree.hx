@@ -9,7 +9,7 @@ enum FSErrorPolicy {
   QUIET;
   THROW;
   LOG;
-  CUSTOM(handler:/*path:*/String->/*error:*/FSError->/*mustStop:*/Bool);
+  CUSTOM(onError:/*path:*/String->/*error:*/FSError->/*mustThrow:*/Bool);
 }
 
 @:enum abstract FSFilter(String) from String to String {
@@ -268,8 +268,8 @@ class FSTree extends FSEntry {
         throw fsError;
       case LOG: 
         trace(fsError.toString());
-      case CUSTOM(handler): 
-        if (handler(path, error)) throw fsError;
+      case CUSTOM(onError): 
+        if (onError(path, error)) throw fsError;
       default:
         throw "Unexpected!";
     }
