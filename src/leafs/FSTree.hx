@@ -24,12 +24,28 @@ typedef FilterOptions = {
   @:optional var regexOptions:String;
 }
 
+typedef JsonReplacer = /*key:*/Dynamic->/*value:*/Dynamic->/*newValue:*/Dynamic;
+
 
 class FSTree extends FSEntry {
   
   static public var errorPolicy:FSErrorPolicy = FSErrorPolicy.LOG;
   
-  public var parent(default, null):FSTree = null;
+  static var parentsCache:Array<FSTree> = [];
+  
+  
+  public var parentId:Int = -1;
+  
+  /** 
+   * Returns the parent dir as an FStree if present in the `parentsCache` (or null otherwise).
+   * 
+   * See _populate().
+   */
+  public var parent(get, null):FSTree;
+  function get_parent():FSTree {
+    return (parentId >= 0 && parentId < parentsCache.length) ? parentsCache[parentId] : null;
+  }
+  
   public var children:Array<FSTree> = [];
   
   /** 
@@ -46,9 +62,10 @@ class FSTree extends FSEntry {
     }
   }
 
-  inline public function populate(recurse:Bool = false, sortByDirsFirst:Bool = true):FSTree {
+  public function populate(recurse:Bool = false, sortByDirsFirst:Bool = true):FSTree {
     if (this.isDir) {
       _populate(this, recurse);
+      
       if (sortByDirsFirst) this.sort();
     }
     
@@ -59,8 +76,12 @@ class FSTree extends FSEntry {
     return findEntry(this, fullName);
   }
   
-  /** See haxe.Json.stringify(). */
-  inline public function toJson(?replacer:Dynamic->Dynamic->Dynamic, space:String = "  "):String {
+  /** 
+   * Converts the entire FSTree to Json.
+   * 
+   * See haxe.Json.stringify(). 
+   */
+  inline public function toJson(?replacer:JsonReplacer, space:String = "  "):String {
     return Json.stringify(this, replacer, space);
   }
   
@@ -202,11 +223,19 @@ class FSTree extends FSEntry {
     return includedPaths;
   }
   
+  /** 
+   * Note: `parentEntry` will be added to `parentsCache` so that it can be easily retrieved
+   * by accessing the `parent` property on every child.
+   */
   function _populate(parentEntry:FSTree, recurse:Bool):Void {
     var entries = FileSystem.readDirectory(parentEntry.fullName);
+    
+    var parentId = parentsCache.length;
+    FSTree.parentsCache[parentId] = parentEntry;
+    
     parentEntry.children = entries.map(function (e) { 
       var tree = new FSTree(Path.join([parentEntry.fullName, e]));
-      tree.parent = parentEntry;
+      tree.parentId = parentId;
       return tree;
     });
     
