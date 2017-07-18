@@ -10,7 +10,7 @@ class Utils {
   /** 
    * Transforms `id` into a valid haxe identifier by replacing forbidden characters. 
    * 
-   * NOTE: this mainly addresses transforming filenames/paths into valid haxe identifiers
+   * Note: this mainly addresses transforming filenames/paths into valid haxe identifiers
    *       (like haxeFlixel does), but doesn't guarantee to have a valid id back 
    *       (f.e. doesn't take into account reserved words).
    * 
@@ -35,9 +35,10 @@ class Utils {
   
   /** 
    * Returns true if `array` contains duplicates.
-   * If `duplicate` is specified they will be appended to it. 
+   * 
+   * If `duplicates` is specified they will be appended to it. 
    */
-  static public function hasDuplicates<T>(array:Array<String>, ?duplicates:Array<String>):Bool {
+  static public function hasDuplicates(array:Array<String>, ?duplicates:Array<String>):Bool {
     if (array.length <= 1) return false;
     
     var hasDups = false;
@@ -57,6 +58,7 @@ class Utils {
   
   /** 
    * Sets the field indentified by `dotPath` on `anon` to `value`.
+   * 
    * If `forceCreate` is true, it will create all the fields needed to reach `dotPath`.
    * 
    * ```
@@ -100,13 +102,15 @@ class Utils {
       }
     }
     
-    // add fields from anonA
+    // iterate fields from anonA and add them if needed
     for (fieldName in Reflect.fields(anonA)) {
       if (Reflect.hasField(anonB, fieldName)) {
         if (!deep) continue;
+        
         var fieldA = Reflect.field(anonA, fieldName);
         var fieldB = Reflect.field(anonB, fieldName);
-        // recurse in case of an inner anon field with the same name on both anons
+        
+        // if both fields are anons with the same name, then recurse
         if (Type.typeof(fieldA) == TObject && Type.typeof(fieldB) == TObject) {
           mergeTwoAnons(fieldA, fieldB, deep, into, rootDotPath + fieldName);
         }
@@ -154,7 +158,7 @@ class Utils {
       if (fName == first) {
         if (parts.length == 0) {
           res = {value:value};
-          break;
+          break; // found it
         } else {
           if (Type.typeof(value) == TObject) {
             return findAnonField(value, parts.join("."));

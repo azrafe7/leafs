@@ -115,6 +115,7 @@ class FSTree extends FSEntry {
       for (i in 0...level) str = indent + str;
       buf.add(str + "\n");
     });
+    
     return buf.toString();
   }
   
@@ -126,9 +127,11 @@ class FSTree extends FSEntry {
   
   public function toPathArray():Array<String> {
     var entries = [];
+    
     function pushFullName(e) {
       entries.push(e.fullName);
     }
+    
     traverse(this, pushFullName);
     return entries;
   }
@@ -158,23 +161,27 @@ class FSTree extends FSEntry {
   
   static public function findEntry(parentEntry:FSTree, fullName:String):FSTree {
     var foundEntry:FSTree = null;
+    
     traverseUntil(parentEntry, function(e:FSTree):Bool {
       if (e.fullName == fullName) {
         foundEntry = e;
-        return true;
+        return true; // stop early (no need to test further)
       };
       return false;
     });
+    
     return foundEntry;
   }
   
   static public function findEntries(parentEntry:FSTree, fullNamePattern:EReg):Array<FSTree> {
     var entries:Array<FSTree> = [];
+    
     traverse(parentEntry, function(e:FSTree):Void {
       if (fullNamePattern.match(e.fullName)) {
         entries.push(e);
       };
     });
+    
     return entries;
   }
 
@@ -194,12 +201,13 @@ class FSTree extends FSEntry {
     function include(entry:FSTree):Bool {
       var satisfiesRegex = regex.match(entry.fullName);
       if (!satisfiesRegex) return false;
+      
       return switch (filterOptions.fsFilter) {
-        case FSFilter.ANY:
+        case FSFilter.ANY: 
           return satisfiesRegex;
-        case FSFilter.DIRS_ONLY:
+        case FSFilter.DIRS_ONLY: 
           return satisfiesRegex && entry.isDir;
-        case FSFilter.FILES_ONLY:
+        case FSFilter.FILES_ONLY: 
           return satisfiesRegex && entry.isFile;
         default:
           var errorMessage = 'Invalid `fsFilter` parameter ("${filterOptions.fsFilter}"). Must be compatible with FSFilter enum.';
@@ -211,16 +219,15 @@ class FSTree extends FSEntry {
       }
     }
     
-    var includedEntries:Array<FSTree> = entries.filter(include);
-    
-    return includedEntries;
+    var filteredEntries:Array<FSTree> = entries.filter(include);
+    return filteredEntries;
   }
   
   static public function getFilteredPaths(rootPath:String, recurse:Bool, ?filterOptions:FilterOptions):Array<String> {
-    var includedEntries:Array<FSTree> = getFilteredEntries(rootPath, recurse, filterOptions);
-    var includedPaths:Array<String> = [for (e in includedEntries) e.fullName];
+    var filteredEntries:Array<FSTree> = getFilteredEntries(rootPath, recurse, filterOptions);
+    var filteredPaths:Array<String> = [for (e in filteredEntries) e.fullName];
     
-    return includedPaths;
+    return filteredPaths;
   }
   
   /** 
@@ -248,13 +255,14 @@ class FSTree extends FSEntry {
   
   inline function handleError(path:String, error:Dynamic):Void {
     var fsError = new FSError(path, error);
+    
     switch (FSTree.errorPolicy) {
       case QUIET:
-      case THROW:
+      case THROW: 
         throw fsError;
-      case LOG:
+      case LOG: 
         trace(fsError.toString());
-      case CUSTOM(handler):
+      case CUSTOM(handler): 
         if (handler(path, error)) throw fsError;
       default:
         throw "Unexpected!";
@@ -267,11 +275,14 @@ class FSEntry {
   
   public var isDir(default, null):Bool;
   public var isFile(default, null):Bool;
-  /** Guaranteed to use `/` as path separatorn and to not end with a slash/backslash. */
+  
+  /** Guaranteed to use `/` as path separator, and to not end with a slash/backslash. */
   public var parentPath(default, null):String;
-  /** Guaranteed to use `/` as path separatorn and to not end with a slash/backslash. */
+  
+  /** Guaranteed to use `/` as path separator, and to not end with a slash/backslash. */
   public var name(default, null):String;
-  /** Guaranteed to use `/` as path separatorn and to not end with a slash/backslash. */
+  
+  /** Guaranteed to use `/` as path separator, and to not end with a slash/backslash. */
   public var fullName(default, null):String;
   
   public function new(path:String) {
