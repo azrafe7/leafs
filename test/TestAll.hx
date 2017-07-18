@@ -322,7 +322,7 @@ class TestMisc extends BuddySuite {
         var emptyDirs = FSTree.findEntries(root, ereg);
         Assert.isTrue(emptyDirs.length == 0);
         
-        var ereg = ~/.*CAPS\.txt.*/;
+        var ereg = ~/.*CAPS\.txt.*/i;
         var emptyDirs = FSTree.findEntries(root, ereg);
         Assert.isTrue(emptyDirs.length == 1);
       });

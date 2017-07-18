@@ -9,6 +9,6 @@ class Constants {
   static public var DEEP_FILE:String = "deep.file";
   static public var EMPTY_DIR:String = "empty-dir";
   static public var OTHER_SUB_DIR:String = "assets/otherdir/other.sub.dir";
-  static public var CAPS_FILE:String = "CAPS.txt";
+  static public var CAPS_FILE:String = "CAPS.TXT";
 }
 

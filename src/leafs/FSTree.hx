@@ -20,7 +20,7 @@ enum FSErrorPolicy {
 
 typedef FilterOptions = {
   @:optional var fsFilter:FSFilter;
-  @:optional var regexFilter:String;
+  @:optional var regexPattern:String;
   @:optional var regexOptions:String;
 }
 
@@ -191,12 +191,12 @@ class FSTree extends FSEntry {
     if (filterOptions == null) filterOptions = { };
     var filterDefaults:FilterOptions = {
       fsFilter: FSFilter.ANY,
-      regexFilter: "",
+      regexPattern: "",
       regexOptions: ""
     };
     Utils.mergeAnons([filterDefaults, filterOptions], false, filterOptions);
     
-    var regex = new EReg(filterOptions.regexFilter, filterOptions.regexOptions);
+    var regex = new EReg(filterOptions.regexPattern, filterOptions.regexOptions);
 
     function include(entry:FSTree):Bool {
       var satisfiesRegex = regex.match(entry.fullName);

@@ -47,11 +47,25 @@ class BasicExample {
     trace(repr);
     
     trace("\n" + root.toDebugString());
+    //[subdir]
+    //  [empty-dir]
+    //  [subsubdir]
+    //    deep.file
+    //  subfile.zip
     
     // search for entries using a regex
-    var deepFile = FSTree.findEntries(root, ~/.*deep.file.*/i)[0];
+    var deepFile = FSTree.findEntries(root, ~/.*deep\.file\.*/i)[0];
     trace('contents of "${deepFile.fullName}":');
     trace(File.getContent(deepFile.fullName));
+    
+    // use a filter to retrieve files
+    var txtFilter:FilterOptions = {
+      fsFilter: FSFilter.FILES_ONLY, // files only, skip dirs
+      regexPattern: ".*\\.txt", // only with ".txt" extension
+      regexOptions: "i" // ignore case
+    };
+    var txtFiles = FSTree.getFilteredPaths("assets", true, txtFilter);
+    trace(txtFiles);
   }
   
   static public function customErrorHandler(path:String, error:Dynamic):Bool {
