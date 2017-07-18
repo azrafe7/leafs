@@ -370,6 +370,23 @@ class TestMisc extends BuddySuite {
         fail(ASSETS_SUBSUBDIR + " not found");
       });
     });
+    
+    describe('No circular refs', {
+      timeoutMs = 200;
+      it('Should not timeout or throw', function(done) {
+        var root = new FSTree(ASSETS_DIR).populate(true);
+        
+        var ok = false;
+        haxe.Timer.delay(function() {
+          if (!ok) fail();
+        }, timeoutMs);
+        
+        var json = root.toJson();
+        var repr = Std.string(root);
+        ok = true;
+        done();
+      });
+    });
   }
 }
 
