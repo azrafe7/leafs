@@ -2,7 +2,7 @@
 
 :herb: A tiny FileTree implementation wrapping the haxe file system API.
 
-(WIP: will include macros for AutoComplete and Resource Embedding. I'm trying to come up with a simple/intuitive API, so expect it to change a lot initially)
+(still **WIP**: will hopefully include macros for AutoComplete and Resource Embedding. I'm trying to come up with a simple/intuitive API, so expect it to change a lot initially)
 
 
 ## Usage
@@ -10,21 +10,22 @@
 ```haxe
     var root = new FSTree("assets"); 
     
-    trace("Root entry: " + root);
+    trace("root entry: " + root);
     // Root entry: { isDir => true, name => assets, parentId => -1, fullName => assets, isFile => false, parentPath => , children => [] }
     
-    trace("FullName: " + new Path(root.fullName));
-    // FullName: assets
+    trace("fullName: " + new Path(root.fullName)); // fullName: assets
+    trace("absolute path: " + sys.FileSystem.fullPath(root.fullName)); // absolute path: d:\Dev\Haxe\leafs_git\assets
     
-    // read entries from disk
+    // populate structure by reading entries from disk
     root.populate(true); // passing false will do a shallow scan instead of a deep one
-    trace(root.children.length); // 5
+    trace("immediate children: " + root.children.length); // 5
     
     // convert to pretty Json string
     var prettyJson = root.toJson();
     
     // flatten the tree structure into an array of FSTree
     var flatArray = root.toFlatArray();
+    trace("all children: " + flatArray.length - 1); // 12
     
     // flatten the tree structure into an array of path strings
     var pathArray = root.toPathArray();
@@ -37,7 +38,7 @@
     
     // search for entries using a regex
     var deepFile = FSTree.findEntries(root, ~/.*deep.file.*/i)[0];
-    trace('Contents of "${deepFile.fullName}":');
+    trace('contents of "${deepFile.fullName}":');
     trace(File.getContent(deepFile.fullName));
 
     ...
