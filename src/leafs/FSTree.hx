@@ -124,7 +124,7 @@ class FSTree extends FSEntry {
     return entries;
   }
   
-  public function toStringArray():Array<String> {
+  public function toPathArray():Array<String> {
     var entries = [];
     function pushFullName(e) {
       entries.push(e.fullName);

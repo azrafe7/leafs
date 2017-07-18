@@ -155,7 +155,7 @@ class TestMisc extends BuddySuite {
       
       it('Same length and values', {
         var count = 0;
-        var paths = root.toStringArray();
+        var paths = root.toPathArray();
         var entries = root.toFlatArray();
         
         FSTree.traverse(root, function (e:FSTree) {
@@ -183,7 +183,7 @@ class TestMisc extends BuddySuite {
         Assert.isTrue(root.isFile);
         Assert.isTrue(root.children.length == 0);
         Assert.isTrue(root.toFlatArray().length == 1);
-        Assert.isTrue(root.toStringArray().length == 1);
+        Assert.isTrue(root.toPathArray().length == 1);
       });
       
       it('Deep', {
@@ -191,7 +191,7 @@ class TestMisc extends BuddySuite {
         Assert.isTrue(root.isFile);
         Assert.isTrue(root.children.length == 0);
         Assert.isTrue(root.toFlatArray().length == 1);
-        Assert.isTrue(root.toStringArray().length == 1);
+        Assert.isTrue(root.toPathArray().length == 1);
       });
     });
     
@@ -208,7 +208,7 @@ class TestMisc extends BuddySuite {
       });
       
       it('to*Array()', {
-        var paths = root.toStringArray();
+        var paths = root.toPathArray();
         var entries = root.toFlatArray();
         
         for (i in 0...paths.length) {
@@ -237,7 +237,7 @@ class TestMisc extends BuddySuite {
       });
       
       it('to*Array()', {
-        var paths = root.toStringArray();
+        var paths = root.toPathArray();
         var entries = root.toFlatArray();
         
         for (i in 0...paths.length) {
@@ -413,7 +413,7 @@ class TestValidIds extends BuddySuite {
     describe('Transform to valid ids', {
       it('From assets', function (done) {
         var root = new FSTree(ASSETS_DIR).populate(true);
-        var entries = root.toStringArray();
+        var entries = root.toPathArray();
         
         var xformed = entries.map(Utils.toValidHaxeId);
         
