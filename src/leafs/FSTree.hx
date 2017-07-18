@@ -230,6 +230,12 @@ class FSTree extends FSEntry {
     return filteredPaths;
   }
   
+  inline static public function clearParentsCache():Void {
+    var oldParentsCache = FSTree.parentsCache;
+    oldParentsCache = null;
+    FSTree.parentsCache = [];
+  }
+  
   /** 
    * Note: `parentEntry` will be added to `parentsCache` so that it can be easily retrieved
    * by accessing the `parent` property on every child.
