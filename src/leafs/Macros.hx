@@ -9,6 +9,7 @@ import haxe.macro.TypeTools;
 import haxe.macro.Printer;
 import haxe.macro.Context;
 import haxe.macro.Expr;
+import haxe.macro.Type;
 #end
 
 
@@ -47,4 +48,31 @@ class Macros {
   static public function getCurrentMethodName(?pos:PosInfos):String {
     return pos != null ? pos.className + "." + pos.methodName : null;
   }
+  
+  
+  #if !macro macro #end
+  /**
+   * TODO: Find a better way (my macro-fu is too weak)
+   * Returns the value of `expr`. Throws an exception if `expr` and `type` don't unify.
+   * 
+   * 
+   * ```
+   *   var value = exprValueAs({name:"ego", surname:"surego"}, ComplexTypeTools.toType(macro : {name:String, surname:String});
+   *   trace(value.name);
+   * ```
+   */
+  static public function exprValueAs<T>(expr:Expr, type:Type, ?pos:PosInfos):T {
+    var actualType = Context.typeof(expr);
+    var unifies = Context.unify(actualType, type);
+
+    if (!unifies) {
+      var error = "ERROR: `expr` and `type` don't unify (called from " + pos.fileName + ":" + pos.lineNumber + ")";
+      error += "\n  `expr` was: " + TypeTools.toString(actualType);
+      error += "\n  `type` was: " + TypeTools.toString(type);
+      throw error;
+    }
+    
+    var value = ExprTools.getValue(expr);
+    return value;
+  }  
 }
