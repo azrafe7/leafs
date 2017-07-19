@@ -28,6 +28,13 @@ class BasicExample {
     root.populate(true); // passing false (default) will do a shallow scan instead of a deep one
     trace("immediate children: " + root.children.length); // 3
     
+    trace("\n" + root.toDebugString());
+    //[subdir]
+    //  [empty-dir]
+    //  [subsubdir]
+    //    deep.file
+    //  subfile.zip
+    
     // convert to pretty Json string
     var prettyJson = root.toJson();
     
@@ -45,13 +52,6 @@ class BasicExample {
       else repr += "\n" + e.name;
     }
     trace(repr);
-    
-    trace("\n" + root.toDebugString());
-    //[subdir]
-    //  [empty-dir]
-    //  [subsubdir]
-    //    deep.file
-    //  subfile.zip
     
     // search for entries using a regex
     var deepFile = FSTree.findEntries(root, ~/.*deep\.file\.*/i)[0];

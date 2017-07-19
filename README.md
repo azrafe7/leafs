@@ -21,6 +21,13 @@
     root.populate(true); // passing false (default) will do a shallow scan instead of a deep one
     trace("immediate children: " + root.children.length); // 3
     
+    trace("\n" + root.toDebugString());
+    //[subdir]
+    //  [empty-dir]
+    //  [subsubdir]
+    //    deep.file
+    //  subfile.zip
+    
     // convert to pretty Json string
     var prettyJson = root.toJson();
     
@@ -39,13 +46,6 @@
     }
     trace(repr);
     
-    trace("\n" + root.toDebugString());
-    //[subdir]
-    //  [empty-dir]
-    //  [subsubdir]
-    //    deep.file
-    //  subfile.zip
-    
     // search for entries using a regex
     var deepFile = FSTree.findEntries(root, ~/.*deep.file.*/i)[0];
     trace('contents of "${deepFile.fullName}":');
@@ -61,7 +61,7 @@ Read first (with `populate()`), handle them later!
 `leafs.FSTree` extends `leafs.FSEntry` and exposes simple properties like:
  - `isFile`: true if references a file
  - `isDir`: true if references a dir
- - `parent`: parent dir (or null)
+ - `parent`: parent dir entry (or null)
  - `parentPath`: parent dir name (or empty string)
  - `name`: last part of the path
  - `fullName`: parentPath and name combined
