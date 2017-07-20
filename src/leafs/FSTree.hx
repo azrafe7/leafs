@@ -85,6 +85,40 @@ class FSTree extends FSEntry {
     return Json.stringify(this, replacer, space);
   }
   
+  /** 
+   * Converts the entire FSTree into an anon structure.
+   * 
+   * Keys will be the entry name transformed into a valid haxe id.
+   * Values will be:
+   *   - a nested object for dirs
+   *   - the entry fullName for files
+   * 
+   * Example of output:
+   * ```
+   * {
+   *   "CustomMacros_hx": "src/CustomMacros.hx",
+   *   "BasicExample_hx": "src/BasicExample.hx",
+   *   "leafs": {
+   *     "Utils_hx": "src/leafs/Utils.hx",
+   *     "FSTree_hx": "src/leafs/FSTree.hx",
+   *     "Macros_hx": "src/leafs/Macros.hx",
+   *   }
+   * }
+   * ```
+   */
+  public function toAnon():{ } {
+    var anon = { };
+    
+    for (e in this) {
+      var dotPath = Utils.toValidDotPath(e.fullName); // convert to dotPath
+      
+      if (e.isDir) Utils.setAnonField(anon, dotPath, { }); // add `dotPath: { }` if it's a dir
+      else Utils.setAnonField(anon, dotPath, e.fullName); // add `dotPath: fullName` if it's a file
+    }
+    
+    return anon;
+  }
+  
   inline function _cmpDirsFirst(a:FSTree, b:FSTree):Int {
     if (a.isDir || b.isDir) {
       var aValue = a.isDir ? -1 : 0;
