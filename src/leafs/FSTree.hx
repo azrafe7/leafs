@@ -18,7 +18,7 @@ enum FSErrorPolicy {
   var FILES_ONLY = "FILES_ONLY";
 }
 
-typedef FilterOptions = {
+typedef FSFilterOptions = {
   @:optional var fsFilter:FSFilter;
   @:optional var regexPattern:String;
   @:optional var regexOptions:String;
@@ -33,6 +33,11 @@ class FSTree extends FSEntry {
   
   static var parentsCache:Array<FSTree> = [];
   
+  static public var FILTER_DEFAULTS:FSFilterOptions = {
+    fsFilter: FSFilter.ANY,
+    regexPattern: "",
+    regexOptions: ""
+  };
   
   public var parentId:Int = -1;
   
@@ -219,16 +224,11 @@ class FSTree extends FSEntry {
     return entries;
   }
 
-  static public function getFilteredEntries(rootPath:String, recurse:Bool, ?filterOptions:FilterOptions):Array<FSTree> {
+  static public function getFilteredEntries(rootPath:String, recurse:Bool, ?filterOptions:FSFilterOptions):Array<FSTree> {
     var entries = new FSTree(rootPath).populate(recurse).toFlatArray();
     
     if (filterOptions == null) filterOptions = { };
-    var filterDefaults:FilterOptions = {
-      fsFilter: FSFilter.ANY,
-      regexPattern: "",
-      regexOptions: ""
-    };
-    Utils.mergeAnons([filterDefaults, filterOptions], false, filterOptions);
+    Utils.mergeAnons([FILTER_DEFAULTS, filterOptions], false, filterOptions);
     
     var regex = new EReg(filterOptions.regexPattern, filterOptions.regexOptions);
 
@@ -257,7 +257,7 @@ class FSTree extends FSEntry {
     return filteredEntries;
   }
   
-  static public function getFilteredPaths(rootPath:String, recurse:Bool, ?filterOptions:FilterOptions):Array<String> {
+  static public function getFilteredPaths(rootPath:String, recurse:Bool, ?filterOptions:FSFilterOptions):Array<String> {
     var filteredEntries:Array<FSTree> = getFilteredEntries(rootPath, recurse, filterOptions);
     var filteredPaths:Array<String> = [for (e in filteredEntries) e.fullName];
     
