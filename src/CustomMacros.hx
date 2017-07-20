@@ -36,8 +36,9 @@ class CustomMacros {
     var access = [Access.APublic, Access.AStatic]; // desired var access
     var existingField = Macros.findField(fields, options.varName, access); // check if the field is already present
     
+    var field:Field = null;
     if (existingField == null) {
-      var field = Macros.makeVarField(options.varName, innerAnon); // create a var field named `varName`
+      field = Macros.makeVarField(options.varName, innerAnon); // create a var field named `varName`
       Macros.setFieldAccess(field, access); // make it static and public
       fields.push(field); // add it to the other fields
     } else {
@@ -50,7 +51,10 @@ class CustomMacros {
       var existingAnon = (expr != null) ? Macros.exprValueAs(expr, macro : { }) : { }; // get its value
       var mergedAnon = Utils.mergeTwoAnons(existingAnon, innerAnon, true); // merge old and new anons
       existingField.kind = FVar(null, macro $v{mergedAnon}); // update existing field
+      field = existingField;
     }
+    
+    field.doc = "Auto-generated from '" + Macros.getCurrentMethodName() + "()'."; // set doc comments
     
     return fields;
   }
