@@ -6,6 +6,7 @@ import leafs.Utils;
 #if macro
 import haxe.macro.ExprTools;
 import haxe.macro.TypeTools;
+import haxe.macro.ComplexTypeTools;
 import haxe.macro.Printer;
 import haxe.macro.Context;
 import haxe.macro.Expr;
@@ -49,30 +50,49 @@ class Macros {
     return pos != null ? pos.className + "." + pos.methodName : null;
   }
   
-  
-  #if !macro macro #end
   /**
    * TODO: Find a better way (my macro-fu is too weak)
    * Returns the value of `expr`. Throws an exception if `expr` and `type` don't unify.
-   * 
    * 
    * ```
    *   var value = exprValueAs({name:"ego", surname:"surego"}, ComplexTypeTools.toType(macro : {name:String, surname:String});
    *   trace(value.name);
    * ```
    */
-  static public function exprValueAs<T>(expr:Expr, type:Type, ?pos:PosInfos):T {
+  #if !macro macro #end
+  static public function exprValueAs(expr:Expr, type:ComplexType, ?pos:PosInfos):Dynamic {
     var actualType = Context.typeof(expr);
-    var unifies = Context.unify(actualType, type);
+    var expectedType = ComplexTypeTools.toType(type);
+    var unifies = Context.unify(actualType, expectedType);
 
     if (!unifies) {
       var error = "ERROR: `expr` and `type` don't unify (called from " + pos.fileName + ":" + pos.lineNumber + ")";
       error += "\n  `expr` was: " + TypeTools.toString(actualType);
-      error += "\n  `type` was: " + TypeTools.toString(type);
+      error += "\n  `type` was: " + TypeTools.toString(expectedType);
       throw error;
     }
     
     var value = ExprTools.getValue(expr);
     return value;
-  }  
+  }
+  
+  #if !macro macro #end
+  static public function findField(fields:Array<Field>, name:String, ?access:Array<Access>):Null<Field> {
+    var field = null;
+    if (access == null) access = [];
+    
+    for (f in fields) {
+      if (f.name == name) {
+        var idx = access.length - 1;
+        while (idx >= 0 && f.access.indexOf(access[idx]) >= 0) idx--;
+        
+        if (idx == -1) { // found
+          field = f;
+          break;
+        }
+      }
+    }
+    
+    return field;
+  }
 }
