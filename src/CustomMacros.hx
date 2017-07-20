@@ -1,3 +1,4 @@
+import haxe.io.Path;
 import leafs.FSTree;
 import leafs.Macros;
 import leafs.Utils;
@@ -31,7 +32,7 @@ class CustomMacros {
       else Utils.setAnonField(fsAnon, dotPath, e.fullName); // add `dotPath: fullName` if it's a file
     }
     
-    var innerAnon = Utils.findAnonField(fsAnon, Utils.toValidDotPath(options.dir)).value; // extract content of anon referenced by `options.dir`
+    var innerAnon = Utils.findAnonField(fsAnon, Utils.toValidDotPath(Path.normalize(options.dir))).value; // extract content of anon referenced by `options.dir`
     var access = [Access.APublic, Access.AStatic]; // desired var access
     var existingField = Macros.findField(fields, options.varName, access); // check if the field is already present
     
@@ -46,7 +47,6 @@ class CustomMacros {
         default:
           throw "duplicate field is of invalid type";
       }
-      //trace(existingAnon);
       var existingAnon = (expr != null) ? Macros.exprValueAs(expr, macro : { }) : { }; // get its value
       var mergedAnon = Utils.mergeTwoAnons(existingAnon, innerAnon, true); // merge old and new anons
       existingField.kind = FVar(null, macro $v{mergedAnon}); // update existing field
