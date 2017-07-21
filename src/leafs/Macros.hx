@@ -36,12 +36,12 @@ class Macros {
   
   #if !macro macro #end
   static public function parseComplexType(type:String):ComplexType {
-    var expr = Context.parseInlineString('(_$type)', (macro _).pos);
+    var expr = Context.parseInlineString('(_ : $type)', (macro _).pos);
     
     return switch (expr) {
       case macro (_:$complexType): complexType;
       default: 
-        throw '`type` must be a valid type, and start with ":" (ex.: ":Array<String>").';
+        throw '`type` must be a path to a valid type (ex.: "Array<String>" or "leafs.EmbeddedResource").';
     }
   }  
   
