@@ -17,11 +17,23 @@ import haxe.macro.Type;
 class Macros {
   
   #if !macro macro #end
+  /** `value` should be a basic type value or an enum. */
   static public function makeVarField<T>(name:String, value:T, asMonomorph:Bool = false):Field {
     var type = asMonomorph ? null : TypeTools.toComplexType(Context.typeof(macro $v{value}));
     var field:Field = {
       name: name,
       kind: FieldType.FVar(type, macro $v{value}),
+      pos: Context.currentPos()
+    }
+    
+    return field;
+  }
+  
+  #if !macro macro #end
+  static public function makeVarFieldFromExpr(name:String, value:Expr):Field {
+    var field:Field = {
+      name: name,
+      kind: FieldType.FVar(null, value),
       pos: Context.currentPos()
     }
     
@@ -48,6 +60,13 @@ class Macros {
   #if !macro macro #end
   static public function getCurrentMethodName(?pos:PosInfos):String {
     return pos != null ? pos.className + "." + pos.methodName : null;
+  }
+  
+  #if !macro macro #end
+  inline static public function autoDocString(?extraMessage:String, ?pos:PosInfos):String {
+    var msg = "Auto-generated from '" + Macros.getCurrentMethodName(pos) + "()'.";
+    if (extraMessage != null) msg += "\n \n" + extraMessage;
+    return msg;
   }
   
   /**
