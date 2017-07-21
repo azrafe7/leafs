@@ -14,13 +14,15 @@ class EmbeddedResource {
   
   public var name(default, null):String;
   
-  public var metadata:Dynamic = null;
+  public var metadata:{} = null;
+  public var compressed(default, null):Bool;
   
   var _asString:String;
   public var asString(get, null):String;
   inline function get_asString():String {
     if (_asString == null) {
-      _asString = Resource.getString(name);
+      if (compressed) _asString = haxe.zip.Uncompress.run(Resource.getBytes(name)).toString();
+      else _asString = Resource.getString(name);
     }
     return _asString;
   }
@@ -29,15 +31,17 @@ class EmbeddedResource {
   public var asBytes(get, null):Bytes;
   inline function get_asBytes():Bytes {
     if (_asBytes == null) {
-      _asBytes = Resource.getBytes(name);
+      if (compressed) _asBytes = haxe.zip.Uncompress.run(Resource.getBytes(name));
+      else _asBytes = Resource.getBytes(name);
     }
     return _asBytes;
   }
   
   
-  public function new(name:String, ?metadata:Dynamic) {
+  public function new(name:String, ?metadata:{}, compressed = false) {
     this.name = name;
     this.metadata = metadata;
+    this.compressed = compressed;
   }
   
   /** Dispose of this resource (just sets `asString` and `asBytes` to null). */
