@@ -1,10 +1,12 @@
 package leafs;
 
 import haxe.Resource;
+import haxe.ds.Either;
 import haxe.io.Bytes;
 import haxe.io.Path;
 import leafs.EmbeddedResource;
 import leafs.FSTree;
+import leafs.Utils;
 
 #if macro
 import haxe.macro.ExprTools;
@@ -32,45 +34,47 @@ class Embedder {
   
   /** If true a report log will be printed to stdout. */
   static public var LOG:Bool = true;
-  
-  /** See Context.addResource(). */
-  #if !macro macro #end
-  inline static public function addResource(name:String, data:Bytes):Void {
-    Context.addResource(name, data);
-  }
+
   
   #if !macro macro #end
   static function createEmbeddedResourceExpr(name:String, ?metadata:{}, compress = false):Expr {
     return macro new leafs.EmbeddedResource($v{name}, $v{metadata}, $v{compress});
   }
   
+  /** 
+   * Adds data as a haxe Resource, and returns a `new EmbeddedResource()` Expr.
+   * See Context.addResource(). 
+   * 
+   * Discard the returned Expr if you just want to add it as a haxe Resource.
+   */
   #if !macro macro #end
-  static public function addFileResource(resourceName:String, filePath:String, ?metadata:{}, compress = false):Expr {
+  static public function addResource(resourceName:String, data:OneOf<String, Bytes>, ?metadata: { }, compress = false):Expr {
     var resourceExpr = createEmbeddedResourceExpr(resourceName, metadata, compress);
-    var data = sys.io.File.getBytes(filePath);
+    
+    var either:Either<String, Bytes> = data;
+    var dataBytes = switch (either) {
+      case Left(string): haxe.io.Bytes.ofString(string);
+      case Right(bytes): bytes;
+    };
     
     if (compress) {
-      data = haxe.zip.Compress.run(data, 9);
+      dataBytes = haxe.zip.Compress.run(dataBytes, 9);
     }
-    
-    Context.registerModuleDependency(Context.getLocalModule(), filePath);
-    addResource(resourceName, data);
+    Context.addResource(resourceName, dataBytes);
     
     return resourceExpr;
   }
   
   #if !macro macro #end
+  static public function addFileResource(resourceName:String, filePath:String, ?metadata: { }, compress = false):Expr {
+    Context.registerModuleDependency(Context.getLocalModule(), filePath);
+    filePath = Path.normalize(filePath);
+    return addResource(resourceName, sys.io.File.getBytes(filePath));
+  }
+  
+  #if !macro macro #end
   static public function addStringResource(resourceName:String, data:String, ?metadata:{}, compress = false):Expr {
-    var resourceExpr = createEmbeddedResourceExpr(resourceName, metadata, compress);
-    var data = Bytes.ofString(data);
-    
-    if (compress) {
-      data = haxe.zip.Compress.run(data, 9);
-    }
-    
-    addResource(resourceName, data);
-    
-    return resourceExpr;
+    return addResource(resourceName, data, metadata, compress);
   }
   
   /** Build macro. */
@@ -109,10 +113,6 @@ class Embedder {
     
     if (embedOptions == null) embedOptions = { };
     Utils.mergeAnons([EMBED_DEFAULTS, embedOptions], false, embedOptions);
-    //if (embedOptions.anonName == null && embedOptions.mapName == null) {
-    //  embedOptions.anonName = "resources";
-    //  trace("Using default anon '" + embedOptions.anonName + "'.");
-    //}
     
     var access = [Access.AStatic, Access.APublic];
     
@@ -152,9 +152,7 @@ class Embedder {
       }
       
       anonExpr = replaceWithENewExprs(anonExpr);
-      //trace(new Printer().printExpr(anonExpr));
       field = Macros.makeVarFieldFromExpr(embedOptions.anonName, anonExpr);
-      //trace(anon);
     } else if (embedOptions.mapName != null) { // create map field
       trace("Embedding into map '" + embedOptions.mapName + "'.");
       var exprs:Array<Expr> = [];
