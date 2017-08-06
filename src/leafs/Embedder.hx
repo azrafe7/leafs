@@ -32,9 +32,6 @@ class Embedder {
     mapName: null
   };
   
-  /** If true a report log will be printed to stdout. */
-  static public var LOG:Bool = true;
-
   
   #if !macro macro #end
   static function createEmbeddedResourceExpr(name:String, ?metadata:{}, compress = false):Expr {
@@ -48,7 +45,7 @@ class Embedder {
    * Discard the returned Expr if you just want to add it as a haxe Resource.
    */
   #if !macro macro #end
-  static public function addResource(resourceName:String, data:OneOf<String, Bytes>, ?metadata: { }, compress = false):Expr {
+  static public function addResource(resourceName:String, data:OneOf<String, Bytes>, ?metadata: { }, compress = false):{resourceExpr:Expr, rawBytes:Bytes} {
     var resourceExpr = createEmbeddedResourceExpr(resourceName, metadata, compress);
     
     var either:Either<String, Bytes> = data;
@@ -62,18 +59,18 @@ class Embedder {
     }
     Context.addResource(resourceName, dataBytes);
     
-    return resourceExpr;
+    return {resourceExpr:resourceExpr, rawBytes:dataBytes};
   }
   
   #if !macro macro #end
-  static public function addFileResource(resourceName:String, filePath:String, ?metadata: { }, compress = false):Expr {
+  static public function addFileResource(resourceName:String, filePath:String, ?metadata: { }, compress = false):{resourceExpr:Expr, rawBytes:Bytes} {
     Context.registerModuleDependency(Context.getLocalModule(), filePath);
     filePath = Path.normalize(filePath);
     return addResource(resourceName, sys.io.File.getBytes(filePath));
   }
   
   #if !macro macro #end
-  static public function addStringResource(resourceName:String, data:String, ?metadata:{}, compress = false):Expr {
+  static public function addStringResource(resourceName:String, data:String, ?metadata:{}, compress = false):{resourceExpr:Expr, rawBytes:Bytes} {
     return addResource(resourceName, data, metadata, compress);
   }
   
@@ -83,7 +80,7 @@ class Embedder {
     var fields = Context.getBuildFields();
     
     filePath = Path.normalize(filePath);
-    var resourceExpr = addFileResource(resourceName, filePath, metadata, compress);
+    var resourceExpr = addFileResource(resourceName, filePath, metadata, compress).resourceExpr;
     var field:Field = Macros.makeVarFieldFromExpr(fieldName, resourceExpr);
     Macros.setFieldAccess(field, [Access.AStatic, Access.APublic]);
     field.doc = Macros.autoDocString("resourceName: " + resourceName + "\nfilePath: " + filePath); // set doc comments
@@ -97,7 +94,7 @@ class Embedder {
   static public function embedStringResource(fieldName:String, resourceName:String, data:String, ?metadata:{}, compress = false):Array<Field> {
     var fields = Context.getBuildFields();
     
-    var resourceExpr = addStringResource(resourceName, data, metadata, compress);
+    var resourceExpr = addStringResource(resourceName, data, metadata, compress).resourceExpr;
     var field:Field = Macros.makeVarFieldFromExpr(fieldName, resourceExpr);
     Macros.setFieldAccess(field, [Access.AStatic, Access.APublic]);
     field.doc = Macros.autoDocString("resourceName: " + resourceName); // set doc comments
@@ -124,7 +121,7 @@ class Embedder {
         var metadata = {
           ext: Path.extension(entry.fullName).toLowerCase()
         }
-        var expr:Expr = addFileResource(entry.fullName, entry.fullName, metadata, embedOptions.compress); // add as haxe resource and get the expr back
+        var expr:Expr = addFileResource(entry.fullName, entry.fullName, metadata, embedOptions.compress).resourceExpr; // add as haxe resource and get the expr back
         resMap[entry.fullName] = expr;
       }
     }
