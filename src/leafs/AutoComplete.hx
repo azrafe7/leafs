@@ -20,7 +20,7 @@ class AutoComplete {
    * They will be available in the IDE for autocomplete, and stripped from the actual output (replaced by inline strings).
    */
   #if !macro macro #end
-  static public function fromFS(rootPath:String, recurse:Bool = false, ?filterOptions:FSFilterOptions):Array<Field> {
+  static public function fromFS(rootPath:String, recursive:Bool = false, ?filterOptions:FSFilterOptions):Array<Field> {
     var fields = Context.getBuildFields();
     
     if (filterOptions == null) filterOptions = { };
@@ -28,7 +28,7 @@ class AutoComplete {
     
     var access = [Access.AStatic, Access.APublic, Access.AInline];
     
-    for (path in FSTree.getFilteredPaths(rootPath, recurse, filterOptions)) {
+    for (path in FSTree.getFilteredPaths(rootPath, recursive, filterOptions)) {
       var field = Macros.makeVarField(Utils.toValidHaxeId(path).toUpperCase(), path);
       Macros.setFieldAccess(field, access);
       field.doc = '"$path"';

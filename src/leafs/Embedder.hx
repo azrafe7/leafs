@@ -105,7 +105,7 @@ class Embedder {
   
   /** Build macro. */
   #if !macro macro #end
-  static public function embedFromFS(rootPath:String, recurse:Bool = false, ?embedOptions:EmbedOptions, ?filterOptions:FSFilterOptions):Array<Field> {
+  static public function embedFromFS(rootPath:String, recursive:Bool = false, ?embedOptions:EmbedOptions, ?filterOptions:FSFilterOptions):Array<Field> {
     var fields = Context.getBuildFields();
     
     if (embedOptions == null) embedOptions = { };
@@ -116,7 +116,7 @@ class Embedder {
     // (since we cannot do `macro $v{new EmbeddedResource}`, we store ENew exprs and use them later)
     // populate the map with exprs of new EmbeddedResources
     var resMap = new Map<String, Expr>();
-    for (entry in FSTree.getFilteredEntries(rootPath, recurse, filterOptions)) {
+    for (entry in FSTree.getFilteredEntries(rootPath, recursive, filterOptions)) {
       if (entry.isFile) {
         var metadata = {
           ext: Path.extension(entry.fullName).toLowerCase()

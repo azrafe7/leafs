@@ -67,9 +67,9 @@ class FSTree extends FSEntry {
     }
   }
 
-  public function populate(recurse:Bool = false, sortByDirsFirst:Bool = true):FSTree {
+  public function populate(recursive:Bool = false, sortByDirsFirst:Bool = true):FSTree {
     if (this.isDir) {
-      _populate(this, recurse);
+      _populate(this, recursive);
       
       if (sortByDirsFirst) this.sort();
     }
@@ -224,8 +224,8 @@ class FSTree extends FSEntry {
     return entries;
   }
 
-  static public function getFilteredEntries(rootPath:String, recurse:Bool, ?filterOptions:FSFilterOptions):Array<FSTree> {
-    var entries = new FSTree(rootPath).populate(recurse).toFlatArray();
+  static public function getFilteredEntries(rootPath:String, recursive:Bool, ?filterOptions:FSFilterOptions):Array<FSTree> {
+    var entries = new FSTree(rootPath).populate(recursive).toFlatArray();
     
     if (filterOptions == null) filterOptions = { };
     Utils.mergeAnons([FILTER_DEFAULTS, filterOptions], false, filterOptions);
@@ -257,8 +257,8 @@ class FSTree extends FSEntry {
     return filteredEntries;
   }
   
-  static public function getFilteredPaths(rootPath:String, recurse:Bool, ?filterOptions:FSFilterOptions):Array<String> {
-    var filteredEntries:Array<FSTree> = getFilteredEntries(rootPath, recurse, filterOptions);
+  static public function getFilteredPaths(rootPath:String, recursive:Bool, ?filterOptions:FSFilterOptions):Array<String> {
+    var filteredEntries:Array<FSTree> = getFilteredEntries(rootPath, recursive, filterOptions);
     var filteredPaths:Array<String> = [for (e in filteredEntries) e.fullName];
     
     return filteredPaths;
@@ -274,7 +274,7 @@ class FSTree extends FSEntry {
    * Note: `parentEntry` will be added to `parentsCache` so that it can be easily retrieved
    * by accessing the `parent` property on every child.
    */
-  function _populate(parentEntry:FSTree, recurse:Bool):Void {
+  function _populate(parentEntry:FSTree, recursive:Bool):Void {
     var entries = FileSystem.readDirectory(parentEntry.fullName);
     
     var parentId = parentsCache.length;
@@ -287,8 +287,8 @@ class FSTree extends FSEntry {
     });
     
     for (e in parentEntry.children) {
-      if (e.isDir && recurse) {
-        _populate(e, recurse);
+      if (e.isDir && recursive) {
+        _populate(e, recursive);
       }
     }
   }

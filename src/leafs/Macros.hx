@@ -70,8 +70,7 @@ class Macros {
   }
   
   /**
-   * TODO: Find a better way (my macro-fu is too weak)
-   * Returns the value of `expr`. Throws an exception if `expr` and `type` don't unify.
+   * Checks if `expr` and `type` unify, and then returns the value of `expr`. Throws an exception if they don't unify.
    * 
    * ```
    *   var value = exprValueAs({name:"ego", surname:"surego"}, ComplexTypeTools.toType(macro : {name:String, surname:String});
