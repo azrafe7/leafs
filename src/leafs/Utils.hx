@@ -30,7 +30,7 @@ class Utils {
     return res;
   }
   
-  /** Transforms something like "assets/sub.dir/image.png" into "assets.sub_dir.image_png". */
+  /** Transforms something like "assets/sub.dir/image.png" into "assets__sub_dir__image_png". */
   inline static public function toValidDotPath(filePath:String):String {
     return filePath.split("/").map(Utils.toValidHaxeId).join(".");
   }
@@ -70,7 +70,8 @@ class Utils {
    *   setAnonField(anon, "inner.value", "deep", true); // ok, {assets: 1, inner: {value: "deep"}}, the `inner` field will be created
    * ```
    */
-  static public function setAnonField<T>(anon:{}, dotPath:String, value:T, forceCreate:Bool = false) {
+  static public function setAnonField<T>(anon: { }, dotPath:String, value:T, forceCreate:Bool = false) {
+    isAnon(anon);
     var currField = anon;
     var parts = dotPath.split(".");
     var fieldName = parts.pop();
@@ -91,6 +92,9 @@ class Utils {
    */
   static public function mergeTwoAnons(anonA:{}, anonB:{}, deep:Bool = false, into:{} = null, rootDotPath:String = ""):{ } {
     if (into == null) into = { };
+    isAnon(anonA);
+    isAnon(anonB);
+    isAnon(into);
     if (rootDotPath != "") rootDotPath += ".";
     
     // add all fields from anonB (if not already there)
@@ -133,13 +137,21 @@ class Utils {
   static public function mergeAnons(anons:Array<{}>, deep:Bool = false, into:{} = null): { } {
     
     if (into == null) into = { };
+    isAnon(into);
     for (i in 0...anons.length - 1) {
       var anonA = anons[i];
       var anonB = anons[i + 1];
+      isAnon(anonA);
+      isAnon(anonB);
       mergeTwoAnons(anonA, anonB, deep, into);
     }
     
     return into;
+  }
+
+  inline static public function isAnon<T>(value:T):Bool {
+    if (Type.typeof(value) != TObject) throw "ERROR: `value` is not an anonymous structure.";
+    return true;
   }
   
   /** 
@@ -152,7 +164,7 @@ class Utils {
     var first = parts.shift();
     var res = null;
 
-    if (Type.typeof(anon) != TObject) return null;
+    isAnon(anon);
 
     var fields = Reflect.fields(anon);
     for (fName in fields) {
@@ -171,6 +183,20 @@ class Utils {
 
     return res;
   }  
+  
+  static public function stringMapToAnon<T>(map:Map<String, T>): { } {
+    var anon = {};
+    
+    for (k in map.keys()) {
+      var value = map[k];
+      setAnonField(anon, toValidDotPath(k), value, true);
+    }
+    
+    return anon;
+  }
+  
+  static public function iterAnon(anon:{}) {
+  } 
   
   /** Applies `regex` to `str` _repeatedly_ and returns the number of matches. */
   static public function countMatches(str:String, regex:EReg):Int {
