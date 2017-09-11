@@ -30,7 +30,7 @@ class Utils {
     return res;
   }
   
-  /** Transforms something like "assets/sub.dir/image.png" into "assets__sub_dir__image_png". */
+  /** Transforms something like "assets/sub.dir/image.png" into "assets.sub_dir.image_png". */
   inline static public function toValidDotPath(filePath:String):String {
     return filePath.split("/").map(Utils.toValidHaxeId).join(".");
   }
@@ -121,7 +121,7 @@ class Utils {
           mergeTwoAnons(fieldA, fieldB, deep, into, rootDotPath + fieldName);
         }
       } else {
-        setAnonField(into, fieldName, Reflect.field(anonA, fieldName));
+        setAnonField(into, rootDotPath + fieldName, Reflect.field(anonA, fieldName));
       }
     }
     

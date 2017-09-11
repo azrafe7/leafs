@@ -42,7 +42,7 @@ class TestAll /*implements Buddy <[
     }
   }
   
-  static public function debugger() {
+  static inline public function debugger() {
   #if nodejs
     untyped __js__('debugger');
   #end
@@ -503,22 +503,22 @@ class TestAnonUtils extends BuddySuite {
       it('Existing fields', {
         var result = Utils.findAnonField(anonA, "root");
         Assert.notNull(result);
-        Assert.same(result.value, anonA.root, true);
+        Assert.same(anonA.root, result.value, true);
         Assert.isTrue(Type.typeof(result.value) == TObject);
         
         result = Utils.findAnonField(anonA, "root.inner.arr");
         Assert.notNull(result);
-        Assert.same(result.value, anonA.root.inner.arr);
+        Assert.same(anonA.root.inner.arr, result.value);
 
         result = Utils.findAnonField(anonB, "fn");
         Assert.notNull(result);
-        Assert.same(result.value, anonB.fn);
+        Assert.same(anonB.fn, result.value);
       });
       
       it('Existing null field', {
         var result = Utils.findAnonField(anonB, "nullField");
         Assert.notNull(result);
-        Assert.same(result.value, anonB.nullField);
+        Assert.same(anonB.nullField, result.value);
         Assert.isTrue(result.value == null);
       });
       
@@ -536,7 +536,6 @@ class TestAnonUtils extends BuddySuite {
     
     describe('Merge anons', {
       it('Shallow merge', {
-        
         var expected = {
           root: {
             inner: {
@@ -551,11 +550,35 @@ class TestAnonUtils extends BuddySuite {
         };
         
         var result = Utils.mergeAnons([anonA, anonB], false);
-        Assert.same(result, expected, true);
+        Assert.same(expected, result, true);
         Assert.isTrue(Utils.findAnonField(result, "root.inner.str").value == anonB.root.inner.str);
         Assert.isTrue(Reflect.hasField(result, "root"));
       });
       
+      it('Deep merge', {
+        var expected = {
+          root: {
+            inner: {
+              str: "NOW it's a str",
+              must: "be in output only if deep merge",
+              arr: ["b", "has", "overwritten", "a"]
+            }
+          },
+          fn: function(x) { return x; },
+          valueB: "must be present",
+          nullField: null,
+          valueA: "must be present",
+          varInC: "c"
+        };
+        
+        TestAll.debugger();
+        var result = Utils.mergeAnons([anonA, anonB, anonC], true);
+        Assert.same(expected, result, true);
+        Assert.isTrue(Utils.findAnonField(result, "root.inner.str").value == anonB.root.inner.str);
+        Assert.isTrue(Utils.findAnonField(result, "root.inner.must").value == anonA.root.inner.must);
+        Assert.isTrue(Utils.findAnonField(result, "varInC").value == anonC.varInC);
+        Assert.isTrue(Reflect.hasField(result, "root"));
+      });
     });
   }
 }
