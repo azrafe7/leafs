@@ -578,6 +578,18 @@ class TestAnonUtils extends BuddySuite {
         Assert.isTrue(Utils.findAnonField(result, "root.inner.must").value == anonA.root.inner.must);
         Assert.isTrue(Utils.findAnonField(result, "varInC").value == anonC.varInC);
         Assert.isTrue(Reflect.hasField(result, "root"));
+        
+        // changing merge order alters output
+        result = Utils.mergeAnons([anonC, anonB, anonA], true);
+        expected.root.inner.arr = anonA.root.inner.arr;
+        Reflect.setField(expected.root.inner, "str", anonA.root.inner.str);
+        
+        Assert.same(expected, result, true);
+        Assert.isTrue(Utils.findAnonField(result, "root.inner.arr").value == anonA.root.inner.arr);
+        Assert.isTrue(Utils.findAnonField(result, "root.inner.str").value == anonA.root.inner.str);
+        Assert.isTrue(Utils.findAnonField(result, "root.inner.must").value == anonA.root.inner.must);
+        Assert.isTrue(Utils.findAnonField(result, "varInC").value == anonC.varInC);
+        Assert.isTrue(Reflect.hasField(result, "root"));
       });
     });
   }
