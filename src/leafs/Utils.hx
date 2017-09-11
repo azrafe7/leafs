@@ -137,12 +137,10 @@ class Utils {
   static public function mergeAnons(anons:Array<{}>, deep:Bool = false, into:{} = null): { } {
     
     if (into == null) into = { };
-    isAnon(into);
+
     for (i in 0...anons.length - 1) {
       var anonA = anons[i];
       var anonB = anons[i + 1];
-      isAnon(anonA);
-      isAnon(anonB);
       mergeTwoAnons(anonA, anonB, deep, into);
     }
     
