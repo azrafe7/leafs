@@ -19,6 +19,7 @@ enum FSErrorPolicy {
 }
 
 typedef FSFilterOptions = {
+  @:optional var skipRoot:Bool;
   @:optional var fsFilter:FSFilter;
   @:optional var regexPattern:String;
   @:optional var regexOptions:String;
@@ -34,6 +35,7 @@ class FSTree extends FSEntry {
   static var parentsCache:Array<FSTree> = [];
   
   static public var FILTER_DEFAULTS:FSFilterOptions = {
+    skipRoot: true,
     fsFilter: FSFilter.ANY,
     regexPattern: "",
     regexOptions: ""
@@ -230,6 +232,9 @@ class FSTree extends FSEntry {
     if (filterOptions == null) filterOptions = { };
     Utils.mergeAnons([FILTER_DEFAULTS, filterOptions], false, filterOptions);
     
+    if (filterOptions.skipRoot && entries.length > 0 && entries[0].isDir) {
+      entries.shift();
+    }
     var regex = new EReg(filterOptions.regexPattern, filterOptions.regexOptions);
 
     function include(entry:FSTree):Bool {

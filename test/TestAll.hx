@@ -493,9 +493,11 @@ class TestAnonUtils extends BuddySuite {
     
     describe('Set fields with dotPath', {
       it('Force path creation', {
-        var obj = { };
+        var obj:Dynamic = { };
         Utils.setAnonField(obj, "root", { }, true);
+        Utils.setAnonField(obj, "root.inner.deeper", "deeper", true);
         Assert.isTrue(Reflect.field(obj, "root") != null);
+        Assert.isTrue(Reflect.field(obj.root.inner, "deeper") == "deeper");
       });
     });
     

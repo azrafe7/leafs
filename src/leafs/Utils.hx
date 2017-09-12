@@ -70,8 +70,8 @@ class Utils {
    *   setAnonField(anon, "inner.value", "deep", true); // ok, {assets: 1, inner: {value: "deep"}}, the `inner` field will be created
    * ```
    */
-  static public function setAnonField<T>(anon: { }, dotPath:String, value:T, forceCreate:Bool = false) {
-    isAnon(anon);
+  static public function setAnonField<T>(anon:{ }, dotPath:String, value:T, forceCreate:Bool = false) {
+    validateAnon(anon);
     var currField = anon;
     var parts = dotPath.split(".");
     var fieldName = parts.pop();
@@ -92,9 +92,9 @@ class Utils {
    */
   static public function mergeTwoAnons(anonA:{}, anonB:{}, deep:Bool = false, into:{} = null, rootDotPath:String = ""):{ } {
     if (into == null) into = { };
-    isAnon(anonA);
-    isAnon(anonB);
-    isAnon(into);
+    validateAnon(anonA);
+    validateAnon(anonB);
+    validateAnon(into);
     if (rootDotPath != "") rootDotPath += ".";
     
     // add all fields from anonB (if not already there)
@@ -147,7 +147,7 @@ class Utils {
     return into;
   }
 
-  inline static public function isAnon<T>(value:T):Bool {
+  inline static public function validateAnon<T>(value:T):Bool {
     if (Type.typeof(value) != TObject) throw "ERROR: `value` is not an anonymous structure.";
     return true;
   }
@@ -162,7 +162,7 @@ class Utils {
     var first = parts.shift();
     var res = null;
 
-    isAnon(anon);
+    validateAnon(anon);
 
     var fields = Reflect.fields(anon);
     for (fName in fields) {
