@@ -7,6 +7,7 @@ import leafs.FSTree;
 class AutoCompleteExample {
 
   static public function main() {
+    trace(ShallowLoAssets + "\n");
     trace(AllAssets + "\n");
     trace(AllAssetsAnon + "\n");
     trace(Msg + "\n");
@@ -16,13 +17,16 @@ class AutoCompleteExample {
 }
 
 
+@:build(leafs.AutoComplete.fromFS("assets", false, null, false))
+class ShallowLoAssets { }
+
 @:build(leafs.AutoComplete.fromFS("assets", true))
 class AllAssets { }
 
 @:build(leafs.AutoComplete.fromFSIntoAnon("assets", true))
 class AllAssetsAnon { }
 
-@:build(leafs.AutoComplete.fromFSIntoAnon("assets", true, {fsFilter:"FILES_ONLY", regexPattern:"[.]txt$", regexOptions:"gi"}, "messages"))
+@:build(leafs.AutoComplete.fromFSIntoAnon("assets", true, {fsFilter:"FILES_ONLY", regexPattern:"[.]txt$"}, "messages"))
 class Msg { }
 
 @:build(leafs.AutoComplete.fromFSIntoAnon("assets", true, {fsFilter:"ANY", regexPattern:"other", regexOptions:"gi"}, "other"))
