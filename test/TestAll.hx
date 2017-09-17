@@ -437,7 +437,6 @@ class TestValidIds extends BuddySuite {
       });
       
       it('From mocked strings (with dups)', {
-        TestAll.debugger();
         var dup = ".4.3";
         var assets = [].concat(mockedAssets);
         assets.push(dup);
@@ -588,7 +587,6 @@ class TestAnonUtils extends BuddySuite {
           varInC: "c"
         };
         
-        TestAll.debugger();
         var result = Utils.mergeAnons([anonA, anonB, anonC], true);
         Assert.same(expected, result, true);
         Assert.isTrue(Utils.findAnonField(result, "root.inner.str").value == anonB.root.inner.str);

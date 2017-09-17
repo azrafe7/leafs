@@ -128,7 +128,9 @@ class Embedder {
     
     var field:Field = null;
     if (embedOptions.anonName != null) { // create anon field
+    #if debug 
       trace("Embedding into anon '" + embedOptions.anonName + "'.");
+    #end
       var anon = { };
       var PLACEHOLDER = "_placeholder_";
       for (k in resMap.keys()) {
@@ -151,7 +153,9 @@ class Embedder {
       anonExpr = replaceWithENewExprs(anonExpr);
       field = Macros.makeVarFieldFromExpr(embedOptions.anonName, anonExpr);
     } else if (embedOptions.mapName != null) { // create map field
+    #if debug 
       trace("Embedding into map '" + embedOptions.mapName + "'.");
+    #end
       var exprs:Array<Expr> = [];
       for (k in resMap.keys()) {
         exprs.push(macro $v{k} => ${resMap[k]});
