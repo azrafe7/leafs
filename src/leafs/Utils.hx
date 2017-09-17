@@ -102,9 +102,11 @@ class Utils {
    */
   static public function mergeTwoAnons(anonA:{}, anonB:{}, deep:Bool = false, into:{} = null, rootDotPath:String = ""):{ } {
     if (into == null) into = { };
+    
     validateAnon(anonA);
     validateAnon(anonB);
     validateAnon(into);
+    
     if (rootDotPath != "") rootDotPath += ".";
     
     // add all fields from anonB (if not already there)
@@ -127,7 +129,7 @@ class Utils {
         var fieldB = Reflect.field(anonB, fieldName);
         
         // if both fields are anons with the same name, then recurse
-        if (Type.typeof(fieldA) == TObject && Type.typeof(fieldB) == TObject) {
+        if (isAnon(fieldA) && isAnon(fieldB)) {
           mergeTwoAnons(fieldA, fieldB, deep, into, rootDotPath + fieldName);
         }
       } else {
