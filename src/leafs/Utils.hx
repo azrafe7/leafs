@@ -96,25 +96,27 @@ class Utils {
     
     Reflect.setField(currField, fieldName, value);
   }  
-    
+
   /**
    * Same as `mergeAnons`, but only for two anons.
-   * 
-   * The optional `rootDotPath` identifies the root of where to start the merge.
    */
-  static public function mergeTwoAnons(anonA:{}, anonB:{}, deep:Bool = false, into:{} = null, rootDotPath:String = ""):{ } {
+  inline static public function mergeTwoAnons(anonA:{}, anonB:{}, deep:Bool = false, into:{} = null):{ } {
+    return _mergeTwoAnons(anonA, anonB, deep, into, "");
+  }
+  
+  static function _mergeTwoAnons(anonA:{}, anonB:{}, deep:Bool, into:{}, dotPath:String):{ } {
     if (into == null) into = { };
     
     validateAnon(anonA);
     validateAnon(anonB);
     validateAnon(into);
     
-    if (rootDotPath != "") rootDotPath += ".";
+    if (dotPath != "") dotPath += ".";
     
     // add all fields from anonB (if not already there)
     for (fieldName in Reflect.fields(anonB)) {
       var fieldB = Reflect.field(anonB, fieldName);
-      var fieldIntoObj = findAnonField(into, rootDotPath + fieldName);
+      var fieldIntoObj = findAnonField(into, dotPath + fieldName);
       var alreadyAdded = fieldIntoObj != null && fieldIntoObj.value == fieldB;
       
       if (!alreadyAdded) {
@@ -132,10 +134,10 @@ class Utils {
         
         // if both fields are anons with the same name, then recurse
         if (isAnon(fieldA) && isAnon(fieldB)) {
-          mergeTwoAnons(fieldA, fieldB, deep, into, rootDotPath + fieldName);
+          _mergeTwoAnons(fieldA, fieldB, deep, into, dotPath + fieldName);
         }
       } else {
-        setAnonField(into, rootDotPath + fieldName, Reflect.field(anonA, fieldName));
+        setAnonField(into, dotPath + fieldName, Reflect.field(anonA, fieldName));
       }
     }
     
