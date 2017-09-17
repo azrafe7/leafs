@@ -3,6 +3,8 @@ package leafs;
 import haxe.ds.Either;
 
 
+typedef AnonIterCallback = /*parent:*/{}->/*key:*/String->/*value:*/Dynamic->/*dotPath:*/String->Void;
+
 class Utils {
   
   /** RegEx of invalid id chars (used by toValidId()). */
@@ -208,8 +210,25 @@ class Utils {
     return anon;
   }
   
-  static public function iterAnon(anon:{}) {
+  inline static public function iterateAnon(anon: { }, callback:AnonIterCallback) {
+    _iterateAnon(anon, callback, "");
   } 
+  
+  static function _iterateAnon(anon: { }, callback:AnonIterCallback, dotPath:String) {
+    validateAnon(anon);
+    
+    var root = dotPath;
+    if (root != "") root += ".";
+    
+    for (key in Reflect.fields(anon)) {
+      dotPath = root + key;
+      var value = Reflect.field(anon, key);
+      
+      callback(anon, key, value, dotPath);
+      
+      if (isAnon(value)) _iterateAnon(value, callback, dotPath);
+    }
+  }
   
   /** Applies `regex` to `str` _repeatedly_ and returns the number of matches. */
   static public function countMatches(str:String, regex:EReg):Int {
