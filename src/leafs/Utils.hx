@@ -157,30 +157,29 @@ class Utils {
    * 
    * Note: remember to unwrap the value in case of a successful search.
    */
-  static public function findAnonField(anon:{}, dotPath:String):Null<{value:Dynamic}> {
+  inline static public function findAnonField(anon:{}, dotPath:String):Null<{value:Dynamic}> {
     var parts = dotPath.split(".");
-    var first = parts.shift();
-    var res = null;
-
+    return _findAnonField(anon, parts, 0);
+  }  
+  
+  static function _findAnonField(anon:{}, dotPath:Array<String>, idx:Int):Null<{value:Dynamic}> {
     validateAnon(anon);
-
-    var fields = Reflect.fields(anon);
-    for (fName in fields) {
-      var value = Reflect.field(anon, fName);
-      if (fName == first) {
-        if (parts.length == 0) {
-          res = {value:value};
-          break; // found it
-        } else {
-          if (Type.typeof(value) == TObject) {
-            return findAnonField(value, parts.join("."));
-          }
-        }
+    
+    var curr:haxe.DynamicAccess<String> = anon;
+    var key:String = dotPath[idx];
+    
+    if (curr.exists(key)) {
+      var value = curr[key];
+      if (idx == dotPath.length - 1) { // found
+        return {value:value};
+      }
+      if (Type.typeof(value) == TObject) {
+        return _findAnonField(value, dotPath, idx + 1);
       }
     }
 
-    return res;
-  }  
+    return null;
+  }
   
   static public function stringMapToAnon<T>(map:Map<String, T>): { } {
     var anon = {};
