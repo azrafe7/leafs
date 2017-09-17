@@ -26,14 +26,14 @@ class AllAssets { }
 @:build(leafs.AutoComplete.fromFSIntoAnon("assets", true))
 class AllAssetsAnon { }
 
-@:build(leafs.AutoComplete.fromFSIntoAnon("assets", true, {fsFilter:"FILES_ONLY", regexPattern:"[.]txt$"}, "messages"))
+@:build(leafs.AutoComplete.fromFSIntoAnon("assets", true, {fsFilter:"FILES_ONLY", regexPattern:"[.]Txt$", regexOptions:"i"}, "messages"))
 class Msg { }
 
-@:build(leafs.AutoComplete.fromFSIntoAnon("assets", true, {fsFilter:"ANY", regexPattern:"other", regexOptions:"gi"}, "other"))
+@:build(leafs.AutoComplete.fromFSIntoAnon("assets", true, {fsFilter:"ANY", regexPattern:"other", regexOptions:"i"}, "other"))
 class Other { }
 
-@:build(leafs.AutoComplete.fromFSIntoAnon("assets", true, {fsFilter:"FILES_ONLY", regexPattern:"[.]zip$", regexOptions:"gi"}, "zip"))
+@:build(leafs.AutoComplete.fromFSIntoAnon("assets", true, {fsFilter:"FILES_ONLY", regexPattern:"[.]zip$", regexOptions:"i"}, "zip"))
 @:build(leafs.AutoComplete.fromFSIntoAnon("assets", true, {fsFilter:"DIRS_ONLY"}, "dirs"))
-@:build(leafs.AutoComplete.fromFSIntoAnon("assets", true, {fsFilter:"FILES_ONLY", regexPattern:"[.]txt$", regexOptions:"gi"}, "txt"))
+@:build(leafs.AutoComplete.fromFSIntoAnon("assets", true, {fsFilter:"FILES_ONLY", regexPattern:"[.]txt$"}, "txt"))
 class Multi { }
 
