@@ -493,11 +493,26 @@ class TestAnonUtils extends BuddySuite {
     
     describe('Set fields with dotPath', {
       it('Force path creation', {
-        var obj:Dynamic = { };
-        Utils.setAnonField(obj, "root", { }, true);
-        Utils.setAnonField(obj, "root.inner.deeper", "deeper", true);
-        Assert.isTrue(Reflect.field(obj, "root") != null);
-        Assert.isTrue(Reflect.field(obj.root.inner, "deeper") == "deeper");
+        var anon = { assets: "path/to/res/" };
+        
+        Assert.raises(function() {
+          Utils.setAnonField(anon, "assets.one", 1); // error, the `assets` field was already defined and not an anon
+        });
+        Assert.same({ assets:"path/to/res/" }, anon);
+        
+        Utils.setAnonField(anon, "assets.one", 1, true); // ok, {assets: {one: 1}}, the `assets` field is overwritten
+        Assert.same({ assets: { one: 1 }}, anon);
+        
+        Assert.raises(function() {
+          Utils.setAnonField(anon, "inner.value", "deep"); // error, the `inner` field doesn't exist
+        });
+        Assert.same({ assets: { one: 1 }}, anon);        
+        
+        Utils.setAnonField(anon, "inner.value", "deep", true); // ok, {assets: {one: 1}, inner: {value: "deep"}}, the `inner` field will be created
+        Assert.same({ assets: { one: 1 }, inner: { value: "deep" }}, anon);
+        
+        Utils.setAnonField(anon, "go.even.deeper", { }, true);
+        Assert.same({ assets: { one: 1 }, inner: { value: "deep" }, go: { even: { deeper: { }}}}, anon);
       });
     });
     

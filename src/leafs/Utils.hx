@@ -66,8 +66,9 @@ class Utils {
    * ```
    *   var anon = {assets: "path/to/res/"};
    *   setAnonField(anon, "assets.one", 1); // error, the `assets` field was already defined and not an anon
+   *   setAnonField(anon, "assets.one", 1, true); // ok, {assets: {one: 1}}, the `assets` field is overwritten
    *   setAnonField(anon, "inner.value", "deep"); // error, the `inner` field doesn't exist
-   *   setAnonField(anon, "inner.value", "deep", true); // ok, {assets: 1, inner: {value: "deep"}}, the `inner` field will be created
+   *   setAnonField(anon, "inner.value", "deep", true); // ok, {assets: {one: 1}, inner: {value: "deep"}}, the `inner` field will be created
    * ```
    */
   static public function setAnonField<T>(anon:{ }, dotPath:String, value:T, forceCreate:Bool = false) {
@@ -77,11 +78,20 @@ class Utils {
     var fieldName = parts.pop();
     
     for (part in parts) {
-      if (!Reflect.hasField(currField, part)) {
-        Reflect.setField(currField, part, { });
+      var hasField = Reflect.hasField(currField, part);
+      
+      if (forceCreate) {
+        if (!hasField || (hasField && !isAnon(Reflect.field(currField, part)))) {
+          Reflect.setField(currField, part, { });
+        }
+      } else if (!hasField) {
+          throw "`anon` has no field `" + dotPath + "`.";
       }
+      
       currField = Reflect.field(currField, part);
     }
+    if (!isAnon(currField) && !forceCreate) throw "the `" + dotPath + "` field was already defined and not an anon.";
+    
     Reflect.setField(currField, fieldName, value);
   }  
     
@@ -148,8 +158,12 @@ class Utils {
   }
 
   inline static public function validateAnon<T>(value:T):Bool {
-    if (Type.typeof(value) != TObject) throw "ERROR: `value` is not an anonymous structure.";
+    if (!isAnon(value)) throw "`value` is not an anonymous structure.";
     return true;
+  }
+  
+  inline static public function isAnon<T>(value:T):Bool {
+    return Type.typeof(value) == TObject;
   }
   
   /** 
@@ -173,7 +187,7 @@ class Utils {
       if (idx == dotPath.length - 1) { // found
         return {value:value};
       }
-      if (Type.typeof(value) == TObject) {
+      if (isAnon(value)) {
         return _findAnonField(value, dotPath, idx + 1);
       }
     }
